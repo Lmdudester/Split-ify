@@ -751,6 +751,18 @@ body {
   flex-direction: column;
 }
 
+/* Display Settings Header */
+.display-settings-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.display-settings-content {
+  margin-bottom: 1.5rem;
+}
+
 .filter-header {
   display: flex;
   justify-content: space-between;
@@ -1253,4 +1265,41 @@ body {
 
 .loading-cancel-button:active {
   transform: scale(0.98);
+}
+
+/* Display Settings */
+.display-settings {
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.settings-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.settings-item:hover {
+  background-color: var(--spotify-gray);
+}
+
+/* Track Number Column */
+.header-number {
+  width: 50px;
+  padding: 0 0.5rem;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.track-number {
+  width: 50px;
+  padding: 0 0.5rem;
+  text-align: center;
+  color: var(--spotify-light-gray);
+  font-size: 0.9rem;
+  font-weight: 500;
+  flex-shrink: 0;
 }

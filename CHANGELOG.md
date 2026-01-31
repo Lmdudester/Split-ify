@@ -6,6 +6,29 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-01-31
+
+### Added
+- **Display Customization Options**
+  - Toggle track numbers column visibility (shows original playlist position)
+  - Toggle popularity column visibility
+  - "Clear All" button to reset display settings to defaults
+  - Separate "Display Options" section in filter panel
+  - Display settings persist in state independently from filters
+
+### Changed
+- Track list now conditionally renders columns based on user preferences
+- Track numbers now show original position from playlist (1-indexed)
+- Filter panel reorganized with distinct Display Options and Filters sections
+
+### Technical
+- Added `UISettings` type with `showTrackNumbers` and `showPopularity` flags
+- Added `DisplaySettings` component with checkbox controls
+- Extended app store with UI settings state and actions
+- Added `originalPosition` tracking to enriched tracks
+- Added `position` field to playlist track type
+- Enhanced playlist service to track original track positions
+
 ## [1.2.0] - 2026-01-31
 
 ### Added

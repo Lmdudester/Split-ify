@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { EnrichedTrack, LoadingState } from '../types/app';
+import { EnrichedTrack, LoadingState, UISettings } from '../types/app';
 
 interface FilterState {
   selectedGenres: string[];
@@ -18,6 +18,9 @@ interface AppState {
   // Filters
   filters: FilterState;
 
+  // UI Settings
+  uiSettings: UISettings;
+
   // Actions
   setTracks: (tracks: EnrichedTrack[]) => void;
   addTracks: (tracks: EnrichedTrack[]) => void;
@@ -33,6 +36,11 @@ interface AppState {
   setPopularityRange: (range: [number, number]) => void;
   resetFilters: () => void;
   clearTracks: () => void;
+
+  // UI Settings actions
+  setShowTrackNumbers: (show: boolean) => void;
+  setShowPopularity: (show: boolean) => void;
+  resetUISettings: () => void;
 }
 
 const initialLoadingState: LoadingState = {
@@ -62,12 +70,18 @@ const initialFilterState: FilterState = {
   popularityRange: [0, 100]
 };
 
+const initialUISettings: UISettings = {
+  showTrackNumbers: false,
+  showPopularity: false
+};
+
 export const useAppStore = create<AppState>((set) => ({
   tracks: [],
   playlistName: '',
   playlistId: '',
   loading: initialLoadingState,
   filters: initialFilterState,
+  uiSettings: initialUISettings,
 
   setTracks: (tracks) => set({ tracks }),
 
@@ -132,5 +146,17 @@ export const useAppStore = create<AppState>((set) => ({
       playlistName: '',
       playlistId: '',
       filters: initialFilterState
-    })
+    }),
+
+  setShowTrackNumbers: (show) =>
+    set((state) => ({
+      uiSettings: { ...state.uiSettings, showTrackNumbers: show }
+    })),
+
+  setShowPopularity: (show) =>
+    set((state) => ({
+      uiSettings: { ...state.uiSettings, showPopularity: show }
+    })),
+
+  resetUISettings: () => set({ uiSettings: initialUISettings })
 }));

@@ -110,6 +110,7 @@ export function useEnrichedTracks() {
           },
           enrichmentStatus: 'pending',
           addedAt: item.added_at,
+          originalPosition: item.position,
         }));
 
         // Add tracks to store

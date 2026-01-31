@@ -10,6 +10,7 @@ export interface EnrichedTrack {
   };
   enrichmentStatus: 'pending' | 'enriching' | 'complete';
   addedAt: string;
+  originalPosition: number;
 }
 
 export interface AppError {
@@ -41,4 +42,9 @@ export interface LoadingState {
     total: number;
     averageTimeMs?: number;
   };
+}
+
+export interface UISettings {
+  showTrackNumbers: boolean;
+  showPopularity: boolean;
 }

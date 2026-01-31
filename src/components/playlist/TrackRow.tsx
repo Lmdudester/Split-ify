@@ -2,9 +2,12 @@ import { EnrichedTrack } from '../../types/app';
 
 interface TrackRowProps {
   track: EnrichedTrack;
+  showTrackNumber?: boolean;
+  trackNumber?: number;
+  showPopularity?: boolean;
 }
 
-export function TrackRow({ track }: TrackRowProps) {
+export function TrackRow({ track, showTrackNumber, trackNumber, showPopularity }: TrackRowProps) {
   const { track: spotifyTrack, allGenres } = track;
 
   const formatDuration = (ms: number) => {
@@ -21,6 +24,9 @@ export function TrackRow({ track }: TrackRowProps) {
 
   return (
     <div className="track-row">
+      {showTrackNumber && trackNumber !== undefined && (
+        <div className="track-number">{trackNumber}</div>
+      )}
       <div className="track-info">
         {spotifyTrack.album.images[0] && (
           <img
@@ -53,19 +59,21 @@ export function TrackRow({ track }: TrackRowProps) {
         )}
       </div>
 
-      <div className="track-popularity">
-        <div
-          className="popularity-meter"
-          data-level={getPopularityLevel(spotifyTrack.popularity)}
-          aria-label={`Popularity: ${spotifyTrack.popularity} out of 100`}
-        >
+      {showPopularity && (
+        <div className="track-popularity">
           <div
-            className="popularity-fill"
-            style={{ width: `${spotifyTrack.popularity}%` }}
-          />
-          <span className="popularity-value">{spotifyTrack.popularity}</span>
+            className="popularity-meter"
+            data-level={getPopularityLevel(spotifyTrack.popularity)}
+            aria-label={`Popularity: ${spotifyTrack.popularity} out of 100`}
+          >
+            <div
+              className="popularity-fill"
+              style={{ width: `${spotifyTrack.popularity}%` }}
+            />
+            <span className="popularity-value">{spotifyTrack.popularity}</span>
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="track-duration">{formatDuration(spotifyTrack.duration_ms)}</div>
     </div>

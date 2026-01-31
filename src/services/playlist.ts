@@ -23,14 +23,15 @@ export async function getPlaylistTracks(
 
   let url: string | null = `/playlists/${id}/tracks?limit=${API_LIMITS.TRACKS_PER_REQUEST}`;
   let total = 0;
+  let currentPosition = 0;
 
   while (url) {
     const response: {
-      items: PlaylistTrack[];
+      items: Array<{ track: any; added_at: string }>;
       next: string | null;
       total: number;
     } = await spotifyFetch<{
-      items: PlaylistTrack[];
+      items: Array<{ track: any; added_at: string }>;
       next: string | null;
       total: number;
     }>(url);
@@ -39,7 +40,20 @@ export async function getPlaylistTracks(
       total = response.total;
     }
 
-    allTracks.push(...response.items.filter((item: PlaylistTrack) => item.track !== null));
+    // Add position to each item and filter out invalid tracks
+    const tracksWithPosition = response.items.map((item, index) => ({
+      ...item,
+      position: currentPosition + index
+    })).filter((item: PlaylistTrack) =>
+      item.track !== null &&
+      item.track.id &&
+      item.track.name &&
+      item.track.artists &&
+      item.track.artists.length > 0
+    );
+
+    allTracks.push(...tracksWithPosition);
+    currentPosition += response.items.length;
     onProgress?.(allTracks.length, total);
 
     url = response.next;
@@ -64,14 +78,15 @@ export async function getPlaylistTracksStreaming(
 
   let url: string | null = `/playlists/${id}/tracks?limit=${API_LIMITS.TRACKS_PER_REQUEST}`;
   let total = 0;
+  let currentPosition = 0;
 
   while (url) {
     const response: {
-      items: PlaylistTrack[];
+      items: Array<{ track: any; added_at: string }>;
       next: string | null;
       total: number;
     } = await spotifyFetch<{
-      items: PlaylistTrack[];
+      items: Array<{ track: any; added_at: string }>;
       next: string | null;
       total: number;
     }>(url);
@@ -80,11 +95,23 @@ export async function getPlaylistTracksStreaming(
       total = response.total;
     }
 
-    const validTracks = response.items.filter((item: PlaylistTrack) => item.track !== null);
-    allTracks.push(...validTracks);
+    // Add position to each item and filter out invalid tracks
+    const tracksWithPosition = response.items.map((item, index) => ({
+      ...item,
+      position: currentPosition + index
+    })).filter((item: PlaylistTrack) =>
+      item.track !== null &&
+      item.track.id &&
+      item.track.name &&
+      item.track.artists &&
+      item.track.artists.length > 0
+    );
+
+    allTracks.push(...tracksWithPosition);
+    currentPosition += response.items.length;
 
     // Call batch callback immediately with this batch
-    onBatch(validTracks, allTracks.length, total);
+    onBatch(tracksWithPosition, allTracks.length, total);
 
     url = response.next;
     if (url) {

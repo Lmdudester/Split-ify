@@ -2,6 +2,7 @@ import { useRef } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { EnrichedTrack } from '../../types/app';
 import { TrackRow } from './TrackRow';
+import { useAppStore } from '../../stores/app-store';
 
 interface TrackListProps {
   tracks: EnrichedTrack[];
@@ -9,6 +10,7 @@ interface TrackListProps {
 
 export function TrackList({ tracks }: TrackListProps) {
   const parentRef = useRef<HTMLDivElement>(null);
+  const { showTrackNumbers, showPopularity } = useAppStore((state) => state.uiSettings);
 
   const virtualizer = useVirtualizer({
     count: tracks.length,
@@ -28,9 +30,10 @@ export function TrackList({ tracks }: TrackListProps) {
   return (
     <div className="track-list-wrapper">
       <div className="track-list-header">
+        {showTrackNumbers && <div className="header-number">#</div>}
         <div className="header-track">Track</div>
         <div className="header-genres">Genres</div>
-        <div className="header-popularity">Popularity</div>
+        {showPopularity && <div className="header-popularity">Popularity</div>}
         <div className="header-duration">Duration</div>
       </div>
       <div ref={parentRef} className="track-list-container">
@@ -53,7 +56,12 @@ export function TrackList({ tracks }: TrackListProps) {
                 transform: `translateY(${virtualRow.start}px)`
               }}
             >
-              <TrackRow track={tracks[virtualRow.index]} />
+              <TrackRow
+                track={tracks[virtualRow.index]}
+                showTrackNumber={showTrackNumbers}
+                trackNumber={tracks[virtualRow.index].originalPosition + 1}
+                showPopularity={showPopularity}
+              />
             </div>
           ))}
         </div>

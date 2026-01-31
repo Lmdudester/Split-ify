@@ -9,6 +9,7 @@ A (Claude Code) vibe-coded, client-side React web app that lets users filter Spo
 - 🎵 **Genre Filtering**: Select specific genres from comprehensive multi-source data
 - 🎯 **Popularity Filter**: Filter tracks by Spotify popularity (0-100 dual-handle slider)
 - 📋 **Interactive Playlist Selector**: Browse, search, and select from all your playlists
+- 🎨 **Display Customization**: Toggle track numbers and popularity column visibility
 - 💾 **Create Playlists**: Save your filtered results as new Spotify playlists
 - ⚡ **Fast & Responsive**: Virtualized track lists for smooth performance with large playlists
 - 📊 **Advanced Loading Progress**: Real-time progress tracking with ETA across multiple data sources
@@ -92,10 +93,14 @@ npm run dev
    - 4 independent progress bars show concurrent data fetching
    - ETA display appears after 15% completion
    - Tracks appear immediately as they load (streaming)
-6. **Apply filters:**
+6. **Customize display options:**
+   - Toggle track numbers to show/hide original playlist positions
+   - Toggle popularity column to show/hide Spotify popularity metrics
+   - Use "Clear All" to reset display settings
+7. **Apply filters:**
    - Use the genre filter to select specific genres (search or browse)
    - Adjust the popularity slider to filter by track popularity
-7. Click "Create Playlist" to save filtered tracks as a new Spotify playlist
+8. Click "Create Playlist" to save filtered tracks as a new Spotify playlist
 
 ## Development
 
@@ -170,6 +175,12 @@ Filters are applied in real-time using React's `useMemo`:
   - Visual popularity meter on each track row
   - Color-coded levels: green (70+), amber (40-69), gray (0-39)
   - Filter by Spotify's popularity metric
+
+- **Display Options**:
+  - Toggle track numbers (shows original playlist position 1-N)
+  - Toggle popularity column (show/hide popularity metrics)
+  - Independent from filters, maintained in separate UI settings
+  - "Clear All" resets display preferences to defaults
 
 **UI Features:**
 - Virtualized track list handles 1000+ tracks smoothly

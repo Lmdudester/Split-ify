@@ -33,6 +33,7 @@ export interface SpotifyTrack {
 export interface PlaylistTrack {
   track: SpotifyTrack;
   added_at: string;
+  position: number;
 }
 
 export interface PlaylistResponse {
