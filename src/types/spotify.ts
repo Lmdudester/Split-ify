@@ -1,0 +1,76 @@
+export interface SpotifyUser {
+  id: string;
+  display_name: string;
+  email: string;
+  images: Array<{ url: string }>;
+}
+
+export interface SpotifyArtist {
+  id: string;
+  name: string;
+  genres: string[];
+  images: Array<{ url: string }>;
+}
+
+export interface SpotifyAlbum {
+  id: string;
+  name: string;
+  images: Array<{ url: string; height: number; width: number }>;
+  release_date: string;
+}
+
+export interface SpotifyTrack {
+  id: string;
+  name: string;
+  artists: Array<{ id: string; name: string }>;
+  album: SpotifyAlbum;
+  duration_ms: number;
+  uri: string;
+  preview_url: string | null;
+}
+
+export interface PlaylistTrack {
+  track: SpotifyTrack;
+  added_at: string;
+}
+
+export interface PlaylistResponse {
+  id: string;
+  name: string;
+  description: string;
+  images: Array<{ url: string }>;
+  tracks: {
+    items: PlaylistTrack[];
+    next: string | null;
+    total: number;
+  };
+  owner: {
+    id: string;
+    display_name: string;
+  };
+}
+
+export interface AudioFeatures {
+  id: string;
+  danceability: number;
+  energy: number;
+  key: number;
+  loudness: number;
+  mode: number;
+  speechiness: number;
+  acousticness: number;
+  instrumentalness: number;
+  liveness: number;
+  valence: number;
+  tempo: number;
+  duration_ms: number;
+  time_signature: number;
+}
+
+export interface TokenResponse {
+  access_token: string;
+  token_type: string;
+  expires_in: number;
+  refresh_token?: string;
+  scope: string;
+}
