@@ -1,6 +1,8 @@
 # Split-ify
 
-A client-side React web app that lets users filter Spotify playlists by artist genres, then create new playlists with the filtered tracks.
+A (Claude Code) vibe-coded, client-side React web app that lets users filter Spotify playlists by genre (& other criteria), then create new playlists with the filtered tracks.
+
+**Note:** This is mostly a pet project for me, but I wanted to do something I'd actually consider using myself. I'm experimenting with practical uses for Claude Code to advance my knowledge in the area.
 
 ## Features
 
@@ -31,7 +33,7 @@ A client-side React web app that lets users filter Spotify playlists by artist g
 3. Fill in the app details
 4. Once created, go to "Settings"
 5. Add the following Redirect URI:
-   - **Local development**: `https://localhost:5173/callback`
+   - **Local development**: `https://127.0.0.1:5173/callback`
    - **Production**: `https://yourdomain.com/callback`
 6. Copy your **Client ID**
 
@@ -51,7 +53,7 @@ npm install
 3. Create a `.env.local` file in the root directory:
 ```env
 VITE_SPOTIFY_CLIENT_ID=your_client_id_here
-VITE_REDIRECT_URI=https://localhost:5173/callback
+VITE_REDIRECT_URI=https://127.0.0.1:5173/callback
 ```
 
 4. Start the development server:
@@ -59,9 +61,9 @@ VITE_REDIRECT_URI=https://localhost:5173/callback
 npm run dev
 ```
 
-5. Open your browser to `https://localhost:5173`
+5. Open your browser to `https://127.0.0.1:5173/`
 
-**Note**: You'll see a browser warning about the self-signed certificate. This is expected for local development. Click "Advanced" and proceed to the site.
+**Note**: You might see a browser warning about the self-signed certificate. This is expected for local development. Click "Advanced" and proceed to the site.
 
 ## Usage
 
@@ -142,4 +144,4 @@ MIT
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Please don't try to contribute- this is a pet project for me and I'm not maniging it. But you're welcome to fork and do your own thing.
