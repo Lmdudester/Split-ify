@@ -29,13 +29,16 @@ export interface LoadingState {
   lastfmTrackTags: {
     completed: number;
     total: number;
+    averageTimeMs?: number;
   };
   lastfmArtistTags: {
     completed: number;
     total: number;
+    averageTimeMs?: number;
   };
   spotifyArtistGenres: {
     completed: number;
     total: number;
+    averageTimeMs?: number;
   };
 }

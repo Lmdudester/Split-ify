@@ -22,17 +22,22 @@ async function fetchWithRetry(
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
+      // Don't set custom User-Agent to avoid CORS preflight issues
+      // Browser will send its default User-Agent header automatically
       const response = await fetch(url);
 
       // Check for rate limit or server errors
       if (response.status === 429 || response.status === 502 || response.status === 503) {
-        // Calculate backoff delay: 1s, 2s, 4s
-        const delayMs = Math.min(1000 * Math.pow(2, attempt), 8000);
+        // Calculate backoff delay: 2s, 4s, 8s (longer delays for server errors)
+        const delayMs = Math.min(2000 * Math.pow(2, attempt), 16000);
 
         if (attempt < maxRetries) {
-          console.warn(`Last.fm rate limit (${response.status}), retrying in ${delayMs}ms (attempt ${attempt + 1}/${maxRetries})...`);
+          const errorType = response.status === 429 ? 'Rate limit' : 'Server error';
+          console.warn(`Last.fm ${errorType} (${response.status}) for ${url.split('?')[0]}, retrying in ${delayMs}ms (attempt ${attempt + 1}/${maxRetries + 1})...`);
           await new Promise(resolve => setTimeout(resolve, delayMs));
           continue;
+        } else {
+          console.warn(`Last.fm ${response.status} - Max retries exceeded, returning empty result`);
         }
       }
 
@@ -41,9 +46,11 @@ async function fetchWithRetry(
       lastError = error instanceof Error ? error : new Error(String(error));
 
       if (attempt < maxRetries) {
-        const delayMs = Math.min(1000 * Math.pow(2, attempt), 8000);
-        console.warn(`Last.fm request failed, retrying in ${delayMs}ms...`);
+        const delayMs = Math.min(2000 * Math.pow(2, attempt), 16000);
+        console.warn(`Last.fm network error, retrying in ${delayMs}ms (attempt ${attempt + 1}/${maxRetries + 1})...`);
         await new Promise(resolve => setTimeout(resolve, delayMs));
+      } else {
+        console.warn(`Last.fm network error - Max retries exceeded, returning empty result`);
       }
     }
   }
@@ -97,7 +104,10 @@ export async function getTrackGenres(
 
     return genres;
   } catch (error) {
-    console.warn(`Failed to fetch Last.fm genres for "${trackName}" by ${artistName}:`, error);
+    // Silent fail - app continues with empty genres (Last.fm issues are common)
+    if (error instanceof Error && !error.message.includes('502')) {
+      console.warn(`Last.fm track lookup failed for "${trackName}" by ${artistName} (continuing with empty genres)`);
+    }
     return [];
   }
 }
@@ -143,7 +153,10 @@ export async function getArtistGenres(
 
     return genres;
   } catch (error) {
-    console.warn(`Failed to fetch Last.fm artist genres for ${artistName}:`, error);
+    // Silent fail - app continues with empty genres (Last.fm issues are common)
+    if (error instanceof Error && !error.message.includes('502')) {
+      console.warn(`Last.fm artist lookup failed for ${artistName} (continuing with empty genres)`);
+    }
     return [];
   }
 }

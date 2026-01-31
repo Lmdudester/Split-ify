@@ -6,8 +6,8 @@ export const LASTFM_CONFIG = {
     artistGetTopTags: 'artist.getTopTags'
   },
   rateLimits: {
-    requestsPerSecond: 5, // Full speed (Last.fm allows 5/sec)
-    minDelayMs: 200, // 5 requests/sec
-    maxConcurrent: 5 // Allow 5 simultaneous requests for maximum speed
+    requestsPerSecond: 3, // Conservative rate (60% of Last.fm's 5/sec limit)
+    minDelayMs: 334, // ~3 requests/sec
+    maxConcurrent: 3 // Match concurrent limit to rate for consistent flow
   }
 };

@@ -17,8 +17,8 @@ import { SpotifyTrack } from '../types/spotify';
 import { EnrichedTrack } from '../types/app';
 
 export interface GenreEnrichmentCallbacks {
-  onLastfmTrackProgress?: (completed: number, total: number) => void;
-  onLastfmArtistProgress?: (completed: number, total: number) => void;
+  onLastfmTrackProgress?: (completed: number, total: number, averageTimeMs?: number) => void;
+  onLastfmArtistProgress?: (completed: number, total: number, averageTimeMs?: number) => void;
   onSpotifyArtistProgress?: (completed: number, total: number) => void;
   onTrackUpdate?: (trackId: string, update: Partial<EnrichedTrack>) => void;
   onBatchUpdate?: (updates: Map<string, Partial<EnrichedTrack>>) => void;
@@ -57,9 +57,35 @@ const NON_GENRE_TAGS = new Set([
 ]);
 
 /**
+ * Check if a string is a specific year (not a decade)
+ * Specific years: 2014, 2015, etc.
+ * Decades (keep): 2010, 2010s, 70s, 80s, etc.
+ */
+function isSpecificYear(str: string): boolean {
+  // Match 4-digit years
+  const yearMatch = str.match(/^(\d{4})$/);
+  if (!yearMatch) {
+    return false;
+  }
+
+  const year = parseInt(yearMatch[1], 10);
+
+  // If it's between 1950-2030 and NOT a decade (ends in 0), it's a specific year
+  if (year >= 1950 && year <= 2030) {
+    // Decades end in 0 (1970, 1980, 2010, etc.) - keep these
+    if (year % 10 === 0) {
+      return false; // It's a decade, not a specific year
+    }
+    return true; // It's a specific year like 2014
+  }
+
+  return false;
+}
+
+/**
  * Normalize and filter genre strings
  */
-function normalizeGenre(genre: string): string | null {
+function normalizeGenre(genre: string, artistName?: string): string | null {
   const normalized = genre.toLowerCase().trim();
 
   // Filter out non-genre tags
@@ -72,6 +98,19 @@ function normalizeGenre(genre: string): string | null {
     return null;
   }
 
+  // Filter out artist name if provided
+  if (artistName && normalized === artistName.toLowerCase().trim()) {
+    return null;
+  }
+
+  // Filter out specific years (but keep decades like "2010", "70s", "2010s")
+  if (isSpecificYear(normalized)) {
+    return null;
+  }
+
+  // Also check for decade formats like "70s", "80s", "2010s" - these are OK
+  // (already handled by not being caught by isSpecificYear)
+
   return normalized;
 }
 
@@ -81,19 +120,20 @@ function normalizeGenre(genre: string): string | null {
 function mergeGenres(
   lastfmTrack: string[],
   lastfmArtist: string[],
-  spotifyArtist: string[]
+  spotifyArtist: string[],
+  artistName?: string
 ): { allGenres: string[]; genreSources: EnrichedTrack['genreSources'] } {
-  // Normalize all genres
+  // Normalize all genres (filter out artist name and specific years)
   const normalizedLastfmTrack = lastfmTrack
-    .map(normalizeGenre)
+    .map(g => normalizeGenre(g, artistName))
     .filter((g): g is string => g !== null);
 
   const normalizedLastfmArtist = lastfmArtist
-    .map(normalizeGenre)
+    .map(g => normalizeGenre(g, artistName))
     .filter((g): g is string => g !== null);
 
   const normalizedSpotifyArtist = spotifyArtist
-    .map(normalizeGenre)
+    .map(g => normalizeGenre(g, artistName))
     .filter((g): g is string => g !== null);
 
   // Combine all genres and deduplicate
@@ -230,9 +270,11 @@ export class GenreEnrichmentQueue {
       // Update progress
       this.trackTagsCompleted++;
       if (this.callbacks.onLastfmTrackProgress) {
+        const averageTimeMs = this.lastfmQueue.getAverageRequestTime() ?? undefined;
         this.callbacks.onLastfmTrackProgress(
           this.trackTagsCompleted,
-          this.trackTagsTotal
+          this.trackTagsTotal,
+          averageTimeMs
         );
       }
 
@@ -264,9 +306,11 @@ export class GenreEnrichmentQueue {
       // Update progress
       this.artistTagsCompleted++;
       if (this.callbacks.onLastfmArtistProgress) {
+        const averageTimeMs = this.lastfmQueue.getAverageRequestTime() ?? undefined;
         this.callbacks.onLastfmArtistProgress(
           this.artistTagsCompleted,
-          this.artistTagsTotal
+          this.artistTagsTotal,
+          averageTimeMs
         );
       }
 
@@ -394,8 +438,8 @@ export class GenreEnrichmentQueue {
     const spotifyArtist = data.artistIds
       .flatMap(id => this.spotifyGenres.get(id) || []);
 
-    // Merge all genres
-    const merged = mergeGenres(lastfmTrack, lastfmArtist, spotifyArtist);
+    // Merge all genres (filter out artist name and specific years)
+    const merged = mergeGenres(lastfmTrack, lastfmArtist, spotifyArtist, data.artistName);
 
     // Determine if enrichment is complete
     const hasLastfmTrack = this.trackGenres.has(trackId);

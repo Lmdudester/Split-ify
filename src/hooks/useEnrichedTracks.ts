@@ -32,14 +32,14 @@ export function useEnrichedTracks() {
 
       // Step 2: Create genre enrichment queue with progress callbacks
       const enrichmentQueue = new GenreEnrichmentQueue({
-        onLastfmTrackProgress: (completed, total) => {
+        onLastfmTrackProgress: (completed, total, averageTimeMs) => {
           setLoading({
-            lastfmTrackTags: { completed, total },
+            lastfmTrackTags: { completed, total, averageTimeMs },
           });
         },
-        onLastfmArtistProgress: (completed, total) => {
+        onLastfmArtistProgress: (completed, total, averageTimeMs) => {
           setLoading({
-            lastfmArtistTags: { completed, total },
+            lastfmArtistTags: { completed, total, averageTimeMs },
           });
         },
         onSpotifyArtistProgress: (completed, total) => {

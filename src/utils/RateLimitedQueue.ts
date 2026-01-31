@@ -22,6 +22,7 @@ export interface QueueProgress {
   completed: number;
   total: number;
   inFlight: number;
+  averageTimeMs?: number;
 }
 
 export class RateLimitedQueue<T = unknown> {
@@ -34,6 +35,18 @@ export class RateLimitedQueue<T = unknown> {
   private processInterval: ReturnType<typeof setInterval> | null = null;
   private dedupKeys = new Set<string>();
   private onProgressCallback?: (progress: QueueProgress) => void;
+
+  // Request timing tracking (rolling window of last 100)
+  private requestTimings: number[] = [];
+  private readonly MAX_TIMING_SAMPLES = 100;
+
+  // 5-minute sliding window for rate limit compliance
+  private requestTimestamps: number[] = [];
+  private readonly SLIDING_WINDOW_MS = 5 * 60 * 1000; // 5 minutes
+
+  // Completion timestamps for throughput calculation (includes rate limit delays)
+  private completionTimestamps: number[] = [];
+  private readonly MAX_COMPLETION_SAMPLES = 100;
 
   constructor(config: RateLimitedQueueConfig) {
     this.config = {
@@ -107,6 +120,52 @@ export class RateLimitedQueue<T = unknown> {
   }
 
   /**
+   * Clean old timestamps outside the 5-minute window
+   */
+  private cleanOldTimestamps(): void {
+    const now = Date.now();
+    const cutoff = now - this.SLIDING_WINDOW_MS;
+
+    // Remove timestamps older than 5 minutes
+    this.requestTimestamps = this.requestTimestamps.filter(
+      timestamp => timestamp > cutoff
+    );
+  }
+
+  /**
+   * Check if we can make a request without exceeding 5-minute average rate
+   * Returns true if we're within the allowed rate
+   */
+  private canMakeRequestWithinWindow(): boolean {
+    this.cleanOldTimestamps();
+
+    const now = Date.now();
+    const windowStart = now - this.SLIDING_WINDOW_MS;
+
+    // Count requests in the last 5 minutes
+    const requestsInWindow = this.requestTimestamps.length;
+
+    // Calculate elapsed time in seconds since first request in window
+    const oldestTimestamp = this.requestTimestamps[0] || now;
+    const elapsedSeconds = Math.max((now - Math.max(oldestTimestamp, windowStart)) / 1000, 1);
+
+    // Calculate current average rate
+    const currentRate = requestsInWindow / elapsedSeconds;
+
+    // Allow request if current rate is below our configured limit
+    // Use 90% of configured rate as safety margin
+    return currentRate < (this.config.requestsPerSecond * 0.9);
+  }
+
+  /**
+   * Record a request timestamp for sliding window tracking
+   */
+  private recordRequestTimestamp(): void {
+    this.requestTimestamps.push(Date.now());
+    this.cleanOldTimestamps();
+  }
+
+  /**
    * Refill tokens using token bucket algorithm
    */
   private refillTokens(): void {
@@ -134,7 +193,8 @@ export class RateLimitedQueue<T = unknown> {
     while (
       this.queue.length > 0 &&
       this.inFlight < this.config.maxConcurrent &&
-      this.tokens >= 1
+      this.tokens >= 1 &&
+      this.canMakeRequestWithinWindow() // Check 5-minute sliding window
     ) {
       const request = this.queue.shift();
       if (!request) break;
@@ -143,7 +203,13 @@ export class RateLimitedQueue<T = unknown> {
       this.tokens -= 1;
       this.inFlight += 1;
 
+      // Record timestamp for sliding window tracking
+      this.recordRequestTimestamp();
+
       this.emitProgress();
+
+      // Track request start time
+      const startTime = Date.now();
 
       // Execute request
       request
@@ -157,6 +223,13 @@ export class RateLimitedQueue<T = unknown> {
           this.completed += 1;
         })
         .finally(() => {
+          // Record request duration (HTTP request time only)
+          const duration = Date.now() - startTime;
+          this.recordRequestTime(duration);
+
+          // Record completion timestamp (for throughput calculation including delays)
+          this.recordCompletionTimestamp();
+
           this.inFlight -= 1;
           this.emitProgress();
 
@@ -169,6 +242,60 @@ export class RateLimitedQueue<T = unknown> {
   }
 
   /**
+   * Record request completion time (actual HTTP request duration)
+   */
+  private recordRequestTime(durationMs: number): void {
+    this.requestTimings.push(durationMs);
+
+    // Keep only last MAX_TIMING_SAMPLES
+    if (this.requestTimings.length > this.MAX_TIMING_SAMPLES) {
+      this.requestTimings.shift();
+    }
+  }
+
+  /**
+   * Record completion timestamp for throughput calculation
+   */
+  private recordCompletionTimestamp(): void {
+    this.completionTimestamps.push(Date.now());
+
+    // Keep only last MAX_COMPLETION_SAMPLES
+    if (this.completionTimestamps.length > this.MAX_COMPLETION_SAMPLES) {
+      this.completionTimestamps.shift();
+    }
+  }
+
+  /**
+   * Calculate throughput-based average time per item (includes rate limit delays)
+   * This is the actual wall-clock time between completions
+   */
+  private getThroughputBasedAverageTime(): number | null {
+    if (this.completionTimestamps.length < 2) {
+      return null;
+    }
+
+    // Calculate time span from first to last completion
+    const firstTimestamp = this.completionTimestamps[0];
+    const lastTimestamp = this.completionTimestamps[this.completionTimestamps.length - 1];
+    const timeSpanMs = lastTimestamp - firstTimestamp;
+
+    // Calculate average time per completion (items - 1 because we're measuring intervals)
+    const numIntervals = this.completionTimestamps.length - 1;
+    const averageTimePerItem = timeSpanMs / numIntervals;
+
+    return averageTimePerItem;
+  }
+
+  /**
+   * Get average request time including rate limit delays
+   * Uses throughput calculation for realistic ETA estimates
+   */
+  getAverageRequestTime(): number | null {
+    // Use throughput-based calculation which includes all delays
+    return this.getThroughputBasedAverageTime();
+  }
+
+  /**
    * Emit progress update
    */
   private emitProgress(): void {
@@ -177,6 +304,7 @@ export class RateLimitedQueue<T = unknown> {
         completed: this.completed,
         total: this.completed + this.inFlight + this.queue.length,
         inFlight: this.inFlight,
+        averageTimeMs: this.getAverageRequestTime() ?? undefined,
       });
     }
   }
@@ -189,6 +317,7 @@ export class RateLimitedQueue<T = unknown> {
       completed: this.completed,
       total: this.completed + this.inFlight + this.queue.length,
       inFlight: this.inFlight,
+      averageTimeMs: this.getAverageRequestTime() ?? undefined,
     };
   }
 
@@ -215,6 +344,9 @@ export class RateLimitedQueue<T = unknown> {
     this.dedupKeys.clear();
     this.completed = 0;
     this.inFlight = 0;
+    this.requestTimings = [];
+    this.requestTimestamps = [];
+    this.completionTimestamps = [];
     this.stop();
   }
 }
