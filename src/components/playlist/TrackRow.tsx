@@ -13,6 +13,12 @@ export function TrackRow({ track }: TrackRowProps) {
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
 
+  const getPopularityLevel = (popularity: number): 'high' | 'medium' | 'low' => {
+    if (popularity >= 70) return 'high';
+    if (popularity >= 40) return 'medium';
+    return 'low';
+  };
+
   return (
     <div className="track-row">
       <div className="track-info">
@@ -31,20 +37,34 @@ export function TrackRow({ track }: TrackRowProps) {
         </div>
       </div>
 
-      <div className="track-metadata">
-        <div className="track-duration">{formatDuration(spotifyTrack.duration_ms)}</div>
-
+      <div className="track-genres">
         {allGenres.length > 0 && (
-          <div className="track-genres">
+          <>
             {allGenres.slice(0, 3).map((genre, i) => (
               <span key={i} className="genre-tag">{genre}</span>
             ))}
             {allGenres.length > 3 && (
               <span className="genre-tag">+{allGenres.length - 3}</span>
             )}
-          </div>
+          </>
         )}
       </div>
+
+      <div className="track-popularity">
+        <div
+          className="popularity-meter"
+          data-level={getPopularityLevel(spotifyTrack.popularity)}
+          aria-label={`Popularity: ${spotifyTrack.popularity} out of 100`}
+        >
+          <div
+            className="popularity-fill"
+            style={{ width: `${spotifyTrack.popularity}%` }}
+          />
+          <span className="popularity-value">{spotifyTrack.popularity}</span>
+        </div>
+      </div>
+
+      <div className="track-duration">{formatDuration(spotifyTrack.duration_ms)}</div>
     </div>
   );
 }

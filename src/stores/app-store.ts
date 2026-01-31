@@ -3,6 +3,7 @@ import { EnrichedTrack, LoadingState } from '../types/app';
 
 interface FilterState {
   selectedGenres: string[];
+  popularityRange: [number, number];
 }
 
 interface AppState {
@@ -26,6 +27,7 @@ interface AppState {
   // Filter actions
   setSelectedGenres: (genres: string[]) => void;
   toggleGenre: (genre: string) => void;
+  setPopularityRange: (range: [number, number]) => void;
   resetFilters: () => void;
   clearTracks: () => void;
 }
@@ -38,7 +40,8 @@ const initialLoadingState: LoadingState = {
 };
 
 const initialFilterState: FilterState = {
-  selectedGenres: []
+  selectedGenres: [],
+  popularityRange: [0, 100]
 };
 
 export const useAppStore = create<AppState>((set) => ({
@@ -74,6 +77,11 @@ export const useAppStore = create<AppState>((set) => ({
         filters: { ...state.filters, selectedGenres }
       };
     }),
+
+  setPopularityRange: (range) =>
+    set((state) => ({
+      filters: { ...state.filters, popularityRange: range }
+    })),
 
   resetFilters: () =>
     set({ filters: initialFilterState }),

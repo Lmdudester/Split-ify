@@ -27,6 +27,7 @@ export interface SpotifyTrack {
   duration_ms: number;
   uri: string;
   preview_url: string | null;
+  popularity: number;
 }
 
 export interface PlaylistTrack {

@@ -1,4 +1,5 @@
 import { GenreFilter } from './GenreFilter';
+import { PopularityFilter } from './PopularityFilter';
 import { useAppStore } from '../../stores/app-store';
 
 interface FilterPanelProps {
@@ -18,6 +19,7 @@ export function FilterPanel({ allGenres }: FilterPanelProps) {
       </div>
 
       <div className="filter-content">
+        <PopularityFilter />
         <GenreFilter genres={allGenres} />
       </div>
     </div>

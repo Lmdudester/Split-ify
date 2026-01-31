@@ -14,7 +14,7 @@ export function useFilters() {
     return Array.from(genreSet).sort();
   }, [tracks]);
 
-  // Filter tracks based on selected genres
+  // Filter tracks based on selected genres and popularity
   const filteredTracks = useMemo(() => {
     return tracks.filter(track => {
       // Genre filter
@@ -23,6 +23,13 @@ export function useFilters() {
           filters.selectedGenres.includes(genre)
         );
         if (!hasMatchingGenre) return false;
+      }
+
+      // Popularity filter
+      const popularity = track.track.popularity;
+      if (popularity < filters.popularityRange[0] ||
+          popularity > filters.popularityRange[1]) {
+        return false;
       }
 
       return true;

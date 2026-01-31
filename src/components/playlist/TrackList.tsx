@@ -26,29 +26,37 @@ export function TrackList({ tracks }: TrackListProps) {
   }
 
   return (
-    <div ref={parentRef} className="track-list-container">
-      <div
-        style={{
-          height: `${virtualizer.getTotalSize()}px`,
-          width: '100%',
-          position: 'relative'
-        }}
-      >
-        {virtualizer.getVirtualItems().map((virtualRow) => (
-          <div
-            key={virtualRow.key}
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: '100%',
-              height: `${virtualRow.size}px`,
-              transform: `translateY(${virtualRow.start}px)`
-            }}
-          >
-            <TrackRow track={tracks[virtualRow.index]} />
-          </div>
-        ))}
+    <div className="track-list-wrapper">
+      <div className="track-list-header">
+        <div className="header-track">Track</div>
+        <div className="header-genres">Genres</div>
+        <div className="header-popularity">Popularity</div>
+        <div className="header-duration">Duration</div>
+      </div>
+      <div ref={parentRef} className="track-list-container">
+        <div
+          style={{
+            height: `${virtualizer.getTotalSize()}px`,
+            width: '100%',
+            position: 'relative'
+          }}
+        >
+          {virtualizer.getVirtualItems().map((virtualRow) => (
+            <div
+              key={virtualRow.key}
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: `${virtualRow.size}px`,
+                transform: `translateY(${virtualRow.start}px)`
+              }}
+            >
+              <TrackRow track={tracks[virtualRow.index]} />
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
