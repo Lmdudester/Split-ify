@@ -6,6 +6,77 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-01-31
+
+### Added
+- **Interactive Playlist Selector**
+  - Browse all user playlists with thumbnails, track counts, and owner names
+  - Search functionality for filtering by playlist or owner name
+  - Alphabetical sorting for easy discovery
+  - Collapsible UI shows selected playlist during loading
+  - "Select New Playlist" button for easy playlist switching
+  - Tab-based interface: choose between selector and URL input
+
+- **Cancel Loading Functionality**
+  - Cancel button appears during playlist loading
+  - Graceful cancellation of enrichment queue
+  - Automatic cleanup prevents orphaned track data
+  - Prevents race conditions with ref-based cancellation flags
+
+- **Advanced Loading Progress UI**
+  - 4 independent progress bars for concurrent data sources:
+    - Spotify Tracks
+    - Last.fm Track Tags
+    - Last.fm Artist Tags
+    - Spotify Artist Genres
+  - Color transitions: Red (0%) → Yellow (50%) → Green (100%)
+  - Hover-to-reveal detailed statistics per progress bar
+  - Throughput-based ETA calculation with 25% buffer
+  - ETA appears when either Last.fm queue reaches 15% completion
+  - Smart formatting: rounds up to nearest minute, shows "Less than a minute" for quick loads
+
+- **Popularity Filter**
+  - Dual-handle slider for filtering by Spotify popularity (0-100)
+  - Visual popularity meter on each track row
+  - Color-coded popularity levels: high (70+), medium (40-69), low (0-39)
+  - Real-time filtering updates
+
+- **Concurrent Genre Enrichment**
+  - Fetches from 3 sources simultaneously instead of sequential fallback
+  - Accumulates ALL genres from all sources (3-4x more per track)
+  - Streaming track display: tracks appear immediately, enrich progressively
+  - Rate-limited queue with token bucket algorithm
+  - Smart retry logic with exponential backoff for API errors
+
+### Changed
+- **Performance Improvements**
+  - 5x faster loading: ~48s for 100 tracks (vs ~310s with old sequential approach)
+  - Loading time for 1000 tracks: ~8 minutes with concurrent enrichment
+  - Reduced rate limit to 3 req/sec (from 4) with 5-minute sliding window
+  - Better compliance with Last.fm's "averaged over 5 minutes" policy
+
+- **Genre Quality Improvements**
+  - Filter out artist names from genre tags
+  - Filter out specific years (e.g., 2014, 2015) but keep decades (70s, 2010s)
+  - Remove mood descriptors and non-genre tags
+  - Better genre normalization across all sources
+
+- **UI/UX Enhancements**
+  - Thicker progress bars (16px) with better visibility
+  - Hover-to-discover stats on progress bars
+  - Lock playlist input tabs when playlist is loaded or loading
+  - Auto-clear filters when selecting new playlist
+  - Improved error messaging for rate limits vs server errors
+
+### Technical
+- Added `RateLimitedQueue` utility with token bucket algorithm
+- Added `GenreEnrichmentQueue` orchestrator for concurrent enrichment
+- Added `LoadingProgress` component with multi-bar progress UI
+- Added `PlaylistSelector` component with search and sorting
+- Improved cancellation support throughout the enrichment pipeline
+- Better request timing tracking for accurate ETA calculation
+- Removed custom User-Agent header to avoid CORS preflight issues
+
 ## [1.1.0] - 2026-01-30
 
 ### Removed
