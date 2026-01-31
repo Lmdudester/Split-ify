@@ -1,5 +1,5 @@
 import { spotifyFetch, delay } from './spotify-api';
-import { PlaylistResponse, PlaylistTrack } from '../types/spotify';
+import { PlaylistResponse, PlaylistTrack, UserPlaylistItem } from '../types/spotify';
 import { API_LIMITS } from '../config/spotify';
 
 /**
@@ -155,4 +155,31 @@ export async function addTracksToPlaylist(
  */
 export async function getCurrentUser(): Promise<{ id: string; display_name: string }> {
   return spotifyFetch<{ id: string; display_name: string }>('/me');
+}
+
+/**
+ * Fetch all user playlists (handles pagination automatically)
+ */
+export async function getAllUserPlaylists(): Promise<UserPlaylistItem[]> {
+  const allPlaylists: UserPlaylistItem[] = [];
+  let url: string | null = `/me/playlists?limit=${API_LIMITS.TRACKS_PER_REQUEST}`;
+
+  while (url) {
+    const response: {
+      items: UserPlaylistItem[];
+      next: string | null;
+    } = await spotifyFetch<{
+      items: UserPlaylistItem[];
+      next: string | null;
+    }>(url);
+
+    allPlaylists.push(...response.items);
+    url = response.next;
+
+    if (url) {
+      await delay(API_LIMITS.BATCH_DELAY_MS);
+    }
+  }
+
+  return allPlaylists;
 }

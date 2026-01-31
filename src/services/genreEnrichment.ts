@@ -179,6 +179,9 @@ export class GenreEnrichmentQueue {
   private spotifyBatchTimer: ReturnType<typeof setTimeout> | null = null;
   private readonly SPOTIFY_BATCH_DELAY_MS = 1000;
 
+  // Cancellation flag for graceful shutdown
+  private isCancelled = false;
+
   constructor(callbacks: GenreEnrichmentCallbacks = {}) {
     this.callbacks = callbacks;
 
@@ -462,8 +465,18 @@ export class GenreEnrichmentQueue {
    * Wait for all enrichment to complete
    */
   async waitForCompletion(): Promise<void> {
+    // Check cancellation flag
+    if (this.isCancelled) {
+      return;
+    }
+
     // Wait for Last.fm queue
     await this.lastfmQueue.waitForCompletion();
+
+    // Check cancellation again before Spotify batch
+    if (this.isCancelled) {
+      return;
+    }
 
     // Wait for any pending Spotify batches
     if (this.spotifyBatchTimer) {
@@ -476,6 +489,7 @@ export class GenreEnrichmentQueue {
    * Clear all data
    */
   clear(): void {
+    this.isCancelled = false; // Reset flag for next load
     this.lastfmQueue.clear();
     this.trackGenres.clear();
     this.artistGenres.clear();
@@ -494,5 +508,22 @@ export class GenreEnrichmentQueue {
       clearTimeout(this.spotifyBatchTimer);
       this.spotifyBatchTimer = null;
     }
+  }
+
+  /**
+   * Cancel enrichment (graceful - lets in-flight requests complete)
+   */
+  cancel(): void {
+    this.isCancelled = true;
+    this.lastfmQueue.clear();
+
+    // Clear Spotify batch timer
+    if (this.spotifyBatchTimer) {
+      clearTimeout(this.spotifyBatchTimer);
+      this.spotifyBatchTimer = null;
+    }
+
+    // Clear pending Spotify artist IDs
+    this.spotifyArtistIds.clear();
   }
 }

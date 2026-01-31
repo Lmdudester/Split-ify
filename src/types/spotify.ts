@@ -51,6 +51,22 @@ export interface PlaylistResponse {
   };
 }
 
+export interface UserPlaylistItem {
+  id: string;
+  name: string;
+  description: string;
+  images: Array<{ url: string }>;
+  tracks: {
+    total: number;
+  };
+  owner: {
+    id: string;
+    display_name: string;
+  };
+  public: boolean;
+  collaborative: boolean;
+}
+
 export interface TokenResponse {
   access_token: string;
   token_type: string;

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useAppStore } from '../stores/app-store';
 import { getPlaylist, getPlaylistTracksStreaming } from '../services/playlist';
 import { GenreEnrichmentQueue } from '../services/genreEnrichment';
@@ -6,6 +6,8 @@ import { EnrichedTrack } from '../types/app';
 
 export function useEnrichedTracks() {
   const [error, setError] = useState<string | null>(null);
+  const isCancelledRef = useRef(false);
+  const enrichmentQueueRef = useRef<GenreEnrichmentQueue | null>(null);
   const {
     setTracks,
     addTracks,
@@ -13,12 +15,38 @@ export function useEnrichedTracks() {
     setPlaylistInfo,
     setLoading,
     resetLoading,
+    resetFilters,
+    clearTracks,
   } = useAppStore();
+
+  const cancelLoading = () => {
+    isCancelledRef.current = true;
+
+    // Cancel enrichment queue if it exists
+    if (enrichmentQueueRef.current) {
+      enrichmentQueueRef.current.cancel();
+    }
+
+    // Reset loading state
+    setLoading({
+      isLoading: false,
+      stage: 'idle',
+      message: 'Loading cancelled',
+    });
+
+    // Clear error
+    setError(null);
+
+    // Clear all playlist data (tracks, playlist info, filters)
+    clearTracks();
+  };
 
   const loadPlaylist = async (playlistInput: string) => {
     try {
       setError(null);
+      isCancelledRef.current = false; // Reset cancellation flag
       resetLoading();
+      resetFilters(); // Clear filters for new playlist
       setTracks([]); // Clear existing tracks
       setLoading({
         isLoading: true,
@@ -29,6 +57,9 @@ export function useEnrichedTracks() {
       // Step 1: Fetch playlist metadata
       const playlist = await getPlaylist(playlistInput);
       setPlaylistInfo(playlist.id, playlist.name);
+
+      // Check for cancellation
+      if (isCancelledRef.current) return;
 
       // Step 2: Create genre enrichment queue with progress callbacks
       const enrichmentQueue = new GenreEnrichmentQueue({
@@ -52,8 +83,16 @@ export function useEnrichedTracks() {
         },
       });
 
+      // Store enrichment queue in ref for cancellation
+      enrichmentQueueRef.current = enrichmentQueue;
+
       // Step 3: Stream tracks and start enrichment immediately
       await getPlaylistTracksStreaming(playlist.id, (batch, loaded, total) => {
+        // Check for cancellation before processing batch
+        if (isCancelledRef.current) {
+          return;
+        }
+
         // Update Spotify tracks progress
         setLoading({
           spotifyTracks: { loaded, total },
@@ -81,10 +120,22 @@ export function useEnrichedTracks() {
         enrichmentQueue.enqueueTracks(spotifyTracks);
       });
 
+      // Check for cancellation after track streaming
+      if (isCancelledRef.current) {
+        enrichmentQueue.cancel();
+        return;
+      }
+
       // Update message once tracks are loaded
       setLoading({
         message: 'Enriching genres from multiple sources...',
       });
+
+      // Check for cancellation before waiting
+      if (isCancelledRef.current) {
+        enrichmentQueue.cancel();
+        return;
+      }
 
       // Step 4: Wait for all enrichment to complete
       await enrichmentQueue.waitForCompletion();
@@ -108,6 +159,7 @@ export function useEnrichedTracks() {
 
   return {
     loadPlaylist,
+    cancelLoading,
     error
   };
 }

@@ -104,9 +104,10 @@ function ProgressBar({ label, current, total }: ProgressBarProps) {
 
 interface LoadingProgressProps {
   loading: LoadingState;
+  onCancel?: () => void;
 }
 
-export function LoadingProgress({ loading }: LoadingProgressProps) {
+export function LoadingProgress({ loading, onCancel }: LoadingProgressProps) {
   if (!loading.isLoading) {
     return null;
   }
@@ -194,6 +195,18 @@ export function LoadingProgress({ loading }: LoadingProgressProps) {
           className={`loading-eta ${aggregatedETA === null ? 'calculating' : ''}`}
         >
           {formatETA(aggregatedETA)}
+        </div>
+      )}
+
+      {onCancel && (
+        <div className="loading-cancel-container">
+          <button
+            onClick={onCancel}
+            className="loading-cancel-button"
+            aria-label="Cancel loading"
+          >
+            Cancel Loading
+          </button>
         </div>
       )}
     </div>

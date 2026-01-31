@@ -14,15 +14,26 @@ export function DashboardPage() {
   const navigate = useNavigate();
   const { logout } = useAuth();
   const [modalOpen, setModalOpen] = useState(false);
+  const [resetKey, setResetKey] = useState(0);
 
   const { tracks, loading, playlistName, clearTracks } = useAppStore();
-  const { loadPlaylist, error } = useEnrichedTracks();
+  const { loadPlaylist, cancelLoading, error } = useEnrichedTracks();
   const { allGenres, filteredTracks } = useFilters();
 
   const handleLogout = () => {
     logout();
     clearTracks();
     navigate('/');
+  };
+
+  const handleReset = () => {
+    clearTracks(); // This also clears filters
+    setResetKey(prev => prev + 1); // Force PlaylistInput to reset
+  };
+
+  const handleCancel = () => {
+    cancelLoading();
+    handleReset(); // Clear everything and return to base selection
   };
 
   return (
@@ -37,11 +48,17 @@ export function DashboardPage() {
       <div className="dashboard-content">
         <div className="main-section">
           <PlaylistInput
+            key={resetKey}
             onSubmit={loadPlaylist}
             isLoading={loading.isLoading}
+            onReset={handleReset}
+            hasLoadedPlaylist={tracks.length > 0}
           />
 
-          <LoadingProgress loading={loading} />
+          <LoadingProgress
+            loading={loading}
+            onCancel={loading.isLoading ? handleCancel : undefined}
+          />
 
           {error && (
             <div className="error-state">

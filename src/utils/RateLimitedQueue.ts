@@ -48,6 +48,9 @@ export class RateLimitedQueue<T = unknown> {
   private completionTimestamps: number[] = [];
   private readonly MAX_COMPLETION_SAMPLES = 100;
 
+  // Cancellation flag for graceful shutdown
+  private isCancelled = false;
+
   constructor(config: RateLimitedQueueConfig) {
     this.config = {
       ...config,
@@ -327,7 +330,8 @@ export class RateLimitedQueue<T = unknown> {
   async waitForCompletion(): Promise<void> {
     return new Promise((resolve) => {
       const checkInterval = setInterval(() => {
-        if (this.queue.length === 0 && this.inFlight === 0) {
+        // Exit if cancelled or queue is empty
+        if (this.isCancelled || (this.queue.length === 0 && this.inFlight === 0)) {
           clearInterval(checkInterval);
           this.stop();
           resolve();
@@ -340,6 +344,7 @@ export class RateLimitedQueue<T = unknown> {
    * Clear the queue and reset state
    */
   clear(): void {
+    this.isCancelled = true; // Signal cancellation
     this.queue = [];
     this.dedupKeys.clear();
     this.completed = 0;
@@ -348,5 +353,13 @@ export class RateLimitedQueue<T = unknown> {
     this.requestTimestamps = [];
     this.completionTimestamps = [];
     this.stop();
+  }
+
+  /**
+   * Reset queue to initial state (called when starting new load)
+   */
+  reset(): void {
+    this.clear();
+    this.isCancelled = false;
   }
 }
