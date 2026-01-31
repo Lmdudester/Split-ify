@@ -20,6 +20,9 @@ interface AppState {
 
   // Actions
   setTracks: (tracks: EnrichedTrack[]) => void;
+  addTracks: (tracks: EnrichedTrack[]) => void;
+  updateTrackGenres: (trackId: string, update: Partial<EnrichedTrack>) => void;
+  updateMultipleTrackGenres: (updates: Map<string, Partial<EnrichedTrack>>) => void;
   setPlaylistInfo: (id: string, name: string) => void;
   setLoading: (loading: Partial<LoadingState>) => void;
   resetLoading: () => void;
@@ -34,9 +37,24 @@ interface AppState {
 
 const initialLoadingState: LoadingState = {
   isLoading: false,
-  progress: 0,
   stage: 'idle',
-  message: ''
+  message: '',
+  spotifyTracks: {
+    loaded: 0,
+    total: 0,
+  },
+  lastfmTrackTags: {
+    completed: 0,
+    total: 0,
+  },
+  lastfmArtistTags: {
+    completed: 0,
+    total: 0,
+  },
+  spotifyArtistGenres: {
+    completed: 0,
+    total: 0,
+  },
 };
 
 const initialFilterState: FilterState = {
@@ -52,6 +70,28 @@ export const useAppStore = create<AppState>((set) => ({
   filters: initialFilterState,
 
   setTracks: (tracks) => set({ tracks }),
+
+  addTracks: (tracks) =>
+    set((state) => ({
+      tracks: [...state.tracks, ...tracks]
+    })),
+
+  updateTrackGenres: (trackId, update) =>
+    set((state) => ({
+      tracks: state.tracks.map((track) =>
+        track.track.id === trackId
+          ? { ...track, ...update }
+          : track
+      )
+    })),
+
+  updateMultipleTrackGenres: (updates) =>
+    set((state) => ({
+      tracks: state.tracks.map((track) => {
+        const update = updates.get(track.track.id);
+        return update ? { ...track, ...update } : track;
+      })
+    })),
 
   setPlaylistInfo: (id, name) =>
     set({ playlistId: id, playlistName: name }),

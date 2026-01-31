@@ -37,7 +37,10 @@ export function TrackRow({ track }: TrackRowProps) {
         </div>
       </div>
 
-      <div className="track-genres">
+      <div
+        className="track-genres"
+        title={allGenres.length > 0 ? allGenres.join(', ') : 'No genres'}
+      >
         {allGenres.length > 0 && (
           <>
             {allGenres.slice(0, 3).map((genre, i) => (

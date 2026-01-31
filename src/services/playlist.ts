@@ -52,6 +52,50 @@ export async function getPlaylistTracks(
 }
 
 /**
+ * Fetch playlist tracks with streaming (calls onBatch for each page)
+ * Enables enrichment to start before all tracks are loaded
+ */
+export async function getPlaylistTracksStreaming(
+  playlistId: string,
+  onBatch: (tracks: PlaylistTrack[], loaded: number, total: number) => void
+): Promise<PlaylistTrack[]> {
+  const id = extractPlaylistId(playlistId);
+  const allTracks: PlaylistTrack[] = [];
+
+  let url: string | null = `/playlists/${id}/tracks?limit=${API_LIMITS.TRACKS_PER_REQUEST}`;
+  let total = 0;
+
+  while (url) {
+    const response: {
+      items: PlaylistTrack[];
+      next: string | null;
+      total: number;
+    } = await spotifyFetch<{
+      items: PlaylistTrack[];
+      next: string | null;
+      total: number;
+    }>(url);
+
+    if (total === 0) {
+      total = response.total;
+    }
+
+    const validTracks = response.items.filter((item: PlaylistTrack) => item.track !== null);
+    allTracks.push(...validTracks);
+
+    // Call batch callback immediately with this batch
+    onBatch(validTracks, allTracks.length, total);
+
+    url = response.next;
+    if (url) {
+      await delay(API_LIMITS.BATCH_DELAY_MS);
+    }
+  }
+
+  return allTracks;
+}
+
+/**
  * Get playlist metadata
  */
 export async function getPlaylist(playlistId: string): Promise<PlaylistResponse> {

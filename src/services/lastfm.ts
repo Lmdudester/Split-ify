@@ -12,6 +12,46 @@ export interface LastFmTopTagsResponse {
 }
 
 /**
+ * Retry a fetch request with exponential backoff for rate limit errors
+ */
+async function fetchWithRetry(
+  url: string,
+  maxRetries: number = 3
+): Promise<Response> {
+  let lastError: Error | null = null;
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      const response = await fetch(url);
+
+      // Check for rate limit or server errors
+      if (response.status === 429 || response.status === 502 || response.status === 503) {
+        // Calculate backoff delay: 1s, 2s, 4s
+        const delayMs = Math.min(1000 * Math.pow(2, attempt), 8000);
+
+        if (attempt < maxRetries) {
+          console.warn(`Last.fm rate limit (${response.status}), retrying in ${delayMs}ms (attempt ${attempt + 1}/${maxRetries})...`);
+          await new Promise(resolve => setTimeout(resolve, delayMs));
+          continue;
+        }
+      }
+
+      return response;
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error));
+
+      if (attempt < maxRetries) {
+        const delayMs = Math.min(1000 * Math.pow(2, attempt), 8000);
+        console.warn(`Last.fm request failed, retrying in ${delayMs}ms...`);
+        await new Promise(resolve => setTimeout(resolve, delayMs));
+      }
+    }
+  }
+
+  throw lastError || new Error('Failed to fetch after retries');
+}
+
+/**
  * Fetches top genre tags for a track from Last.fm
  * @param trackName - Track name
  * @param artistName - Artist name
@@ -35,7 +75,7 @@ export async function getTrackGenres(
   const url = `${LASTFM_CONFIG.baseUrl}?${params}`;
 
   try {
-    const response = await fetch(url);
+    const response = await fetchWithRetry(url);
 
     if (!response.ok) {
       throw new Error(`Last.fm API error: ${response.status}`);
@@ -43,24 +83,17 @@ export async function getTrackGenres(
 
     const data: LastFmTopTagsResponse = await response.json();
 
-    // Debug logging
-    console.log(`Last.fm response for "${trackName}" by ${artistName}:`, data);
-
     // Handle case where tag might be a single object instead of array
     let tags = data.toptags?.tag || [];
     if (!Array.isArray(tags)) {
       tags = tags ? [tags] : [];
     }
 
-    console.log(`  Raw tags (${tags.length}):`, tags);
-
     // Filter tags by relevance and normalize names
     const genres = tags
       .filter(tag => tag.count >= minRelevance)
       .map(tag => tag.name.toLowerCase())
       .slice(0, 5); // Limit to top 5 most relevant genres
-
-    console.log(`  Filtered genres (min relevance ${minRelevance}):`, genres);
 
     return genres;
   } catch (error) {
@@ -90,15 +123,13 @@ export async function getArtistGenres(
   const url = `${LASTFM_CONFIG.baseUrl}?${params}`;
 
   try {
-    const response = await fetch(url);
+    const response = await fetchWithRetry(url);
 
     if (!response.ok) {
       throw new Error(`Last.fm API error: ${response.status}`);
     }
 
     const data: LastFmTopTagsResponse = await response.json();
-
-    console.log(`Last.fm artist tags for ${artistName}:`, data);
 
     let tags = data.toptags?.tag || [];
     if (!Array.isArray(tags)) {
@@ -109,8 +140,6 @@ export async function getArtistGenres(
       .filter(tag => tag.count >= minRelevance)
       .map(tag => tag.name.toLowerCase())
       .slice(0, 5);
-
-    console.log(`  Filtered artist genres (min relevance ${minRelevance}):`, genres);
 
     return genres;
   } catch (error) {

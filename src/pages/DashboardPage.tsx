@@ -8,6 +8,7 @@ import { PlaylistInput } from '../components/playlist/PlaylistInput';
 import { TrackList } from '../components/playlist/TrackList';
 import { FilterPanel } from '../components/filters/FilterPanel';
 import { CreatePlaylistModal } from '../components/create/CreatePlaylistModal';
+import { LoadingProgress } from '../components/LoadingProgress';
 
 export function DashboardPage() {
   const navigate = useNavigate();
@@ -40,17 +41,7 @@ export function DashboardPage() {
             isLoading={loading.isLoading}
           />
 
-          {loading.isLoading && (
-            <div className="loading-state">
-              <div className="progress-bar">
-                <div
-                  className="progress-fill"
-                  style={{ width: `${loading.progress}%` }}
-                />
-              </div>
-              <p>{loading.message}</p>
-            </div>
-          )}
+          <LoadingProgress loading={loading} />
 
           {error && (
             <div className="error-state">
