@@ -25,6 +25,7 @@ A (Claude Code) vibe-coded, client-side React web app that lets users filter Spo
 
 1. **Node.js** (v18 or higher)
 2. **Spotify Developer Account**
+3. **Last.fm API Account** (for genre enrichment)
 
 ### Spotify App Configuration
 
@@ -36,6 +37,12 @@ A (Claude Code) vibe-coded, client-side React web app that lets users filter Spo
    - **Local development**: `https://127.0.0.1:5173/callback`
    - **Production**: `https://yourdomain.com/callback`
 6. Copy your **Client ID**
+
+### Last.fm API Configuration
+
+1. Go to [Last.fm API Account Creation](https://www.last.fm/api/account/create)
+2. Fill in the application details (can be non-commercial)
+3. Copy your **API Key** (you won't need the secret for this app)
 
 ### Installation
 
@@ -54,6 +61,7 @@ npm install
 ```env
 VITE_SPOTIFY_CLIENT_ID=your_client_id_here
 VITE_REDIRECT_URI=https://127.0.0.1:5173/callback
+VITE_LASTFM_API_KEY=your_lastfm_api_key_here
 ```
 
 4. Start the development server:
@@ -112,9 +120,11 @@ The app uses Spotify's OAuth 2.0 with PKCE (Proof Key for Code Exchange) for sec
 When loading a playlist, the app:
 
 1. Fetches playlist tracks (with pagination)
-2. Extracts unique artist IDs and fetches genres in batches
+2. Fetches track-level genre data from Last.fm API
 3. Enriches track objects with genres
 4. Applies filters using React's `useMemo` for efficient updates
+
+**Note:** Genre fetching uses Last.fm's track-level tags for more accurate and comprehensive genre data compared to Spotify's artist-level genres. This process takes approximately 25-30 seconds for a 100-track playlist due to API rate limiting (4 requests/second).
 
 ### Filtering
 

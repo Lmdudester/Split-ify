@@ -15,6 +15,6 @@ export interface AppError {
 export interface LoadingState {
   isLoading: boolean;
   progress: number;
-  stage: 'idle' | 'tracks' | 'artists' | 'complete';
+  stage: 'idle' | 'tracks' | 'genres' | 'complete';
   message: string;
 }
