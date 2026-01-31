@@ -1,6 +1,9 @@
 import { create } from 'zustand';
 import { EnrichedTrack, LoadingState } from '../types/app';
-import { FilterState, DEFAULT_AUDIO_FEATURES, AudioFeatureRange } from '../types/filters';
+
+interface FilterState {
+  selectedGenres: string[];
+}
 
 interface AppState {
   // Data
@@ -23,7 +26,6 @@ interface AppState {
   // Filter actions
   setSelectedGenres: (genres: string[]) => void;
   toggleGenre: (genre: string) => void;
-  setAudioFeatureRange: (feature: keyof FilterState['audioFeatures'], range: AudioFeatureRange) => void;
   resetFilters: () => void;
   clearTracks: () => void;
 }
@@ -36,8 +38,7 @@ const initialLoadingState: LoadingState = {
 };
 
 const initialFilterState: FilterState = {
-  selectedGenres: [],
-  audioFeatures: DEFAULT_AUDIO_FEATURES
+  selectedGenres: []
 };
 
 export const useAppStore = create<AppState>((set) => ({
@@ -73,17 +74,6 @@ export const useAppStore = create<AppState>((set) => ({
         filters: { ...state.filters, selectedGenres }
       };
     }),
-
-  setAudioFeatureRange: (feature, range) =>
-    set((state) => ({
-      filters: {
-        ...state.filters,
-        audioFeatures: {
-          ...state.filters.audioFeatures,
-          [feature]: range
-        }
-      }
-    })),
 
   resetFilters: () =>
     set({ filters: initialFilterState }),

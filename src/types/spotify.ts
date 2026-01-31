@@ -50,23 +50,6 @@ export interface PlaylistResponse {
   };
 }
 
-export interface AudioFeatures {
-  id: string;
-  danceability: number;
-  energy: number;
-  key: number;
-  loudness: number;
-  mode: number;
-  speechiness: number;
-  acousticness: number;
-  instrumentalness: number;
-  liveness: number;
-  valence: number;
-  tempo: number;
-  duration_ms: number;
-  time_signature: number;
-}
-
 export interface TokenResponse {
   access_token: string;
   token_type: string;

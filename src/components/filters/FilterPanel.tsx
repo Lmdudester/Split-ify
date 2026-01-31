@@ -19,10 +19,6 @@ export function FilterPanel({ allGenres }: FilterPanelProps) {
 
       <div className="filter-content">
         <GenreFilter genres={allGenres} />
-
-        <div className="info-message" style={{ marginTop: '1rem', padding: '1rem', backgroundColor: 'var(--spotify-gray)', borderRadius: '4px', fontSize: '0.9rem', color: 'var(--spotify-light-gray)' }}>
-          <strong>Note:</strong> Audio features filtering is disabled. It requires Spotify Extended Quota Mode approval.
-        </div>
       </div>
     </div>
   );

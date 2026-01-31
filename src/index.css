@@ -520,57 +520,6 @@ body {
   padding: 1rem;
 }
 
-/* Audio Feature Sliders */
-.audio-features-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.audio-feature-slider {
-  padding: 0.5rem;
-}
-
-.slider-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.5rem;
-}
-
-.slider-label {
-  font-weight: 500;
-}
-
-.slider-value {
-  color: var(--spotify-light-gray);
-  font-size: 0.9rem;
-}
-
-.slider-description {
-  color: var(--spotify-light-gray);
-  font-size: 0.85rem;
-  margin-bottom: 0.75rem;
-}
-
-.slider .rc-slider-track {
-  background-color: var(--spotify-green);
-}
-
-.slider .rc-slider-handle {
-  border-color: var(--spotify-green);
-  background-color: var(--spotify-white);
-}
-
-.slider .rc-slider-handle:hover,
-.slider .rc-slider-handle:focus {
-  border-color: #1ed760;
-}
-
-.slider .rc-slider-rail {
-  background-color: var(--border);
-}
-
 /* Dialog */
 .dialog-overlay {
   background-color: rgba(0, 0, 0, 0.7);

@@ -46,7 +46,7 @@ export function useEnrichedTracks() {
         });
       });
 
-      // Enrich tracks with genres only (audio features disabled in development mode)
+      // Enrich tracks with genres
       const enrichedTracks: EnrichedTrack[] = playlistTracks.map(item => {
         const allGenres = item.track.artists
           .flatMap(artist => artistGenresMap.get(artist.id) || [])
@@ -55,7 +55,6 @@ export function useEnrichedTracks() {
         return {
           track: item.track,
           allGenres,
-          audioFeatures: null, // Disabled - requires Spotify Extended Quota Mode
           addedAt: item.added_at
         };
       });

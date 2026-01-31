@@ -14,7 +14,7 @@ export function useFilters() {
     return Array.from(genreSet).sort();
   }, [tracks]);
 
-  // Filter tracks based on current filters (genre only - audio features disabled)
+  // Filter tracks based on selected genres
   const filteredTracks = useMemo(() => {
     return tracks.filter(track => {
       // Genre filter

@@ -6,8 +6,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
-### Known Issues
-- Audio features filtering disabled (requires Spotify Extended Quota Mode approval)
+## [1.1.0] - 2026-01-30
+
+### Removed
+- Completely removed audio features functionality (Spotify discontinued API access for personal use)
+- Removed `src/services/audio-features.ts`
+- Removed `src/components/filters/AudioFeatureSlider.tsx`
+- Removed `src/types/filters.ts`
+- Removed `rc-slider` dependency
+- Removed `@radix-ui/react-separator` dependency
+- Cleaned up all audio features references from documentation
+
+### Changed
+- Simplified filter panel to genre-only filtering
+- Updated all documentation to reflect genre-only filtering
+- Reduced bundle size from ~270 KB to ~236 KB
 
 ## [1.0.0] - 2026-01-30
 
@@ -38,4 +51,4 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Token refresh logic
 
 ### Removed
-- Audio features filtering (Spotify API restriction in development mode)
+- Audio features filtering removed from codebase (Spotify no longer provides this API for personal use)
