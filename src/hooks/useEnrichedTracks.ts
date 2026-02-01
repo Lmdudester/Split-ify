@@ -61,7 +61,8 @@ export function useEnrichedTracks() {
       // Check for cancellation
       if (isCancelledRef.current) return;
 
-      // Step 2: Create genre enrichment queue with progress callbacks
+      // Step 2: Get enrichment settings and create genre enrichment queue with progress callbacks
+      const enrichmentSettings = useAppStore.getState().enrichmentSettings;
       const enrichmentQueue = new GenreEnrichmentQueue({
         onLastfmTrackProgress: (completed, total, averageTimeMs) => {
           setLoading({
@@ -81,6 +82,9 @@ export function useEnrichedTracks() {
         onBatchUpdate: (updates) => {
           updateMultipleTrackGenres(updates);
         },
+      }, {
+        useLastfmTrackTags: enrichmentSettings.useLastfmTrackTags,
+        useLastfmArtistTags: enrichmentSettings.useLastfmArtistTags,
       });
 
       // Store enrichment queue in ref for cancellation

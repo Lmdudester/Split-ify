@@ -31,6 +31,11 @@ interface TrackGenreData {
   artistIds: string[];
 }
 
+export interface EnrichmentOptions {
+  useLastfmTrackTags?: boolean;
+  useLastfmArtistTags?: boolean;
+}
+
 /**
  * Common non-genre tags to filter out
  */
@@ -156,6 +161,7 @@ function mergeGenres(
 export class GenreEnrichmentQueue {
   private lastfmQueue: RateLimitedQueue<string[]>;
   private callbacks: GenreEnrichmentCallbacks;
+  private options: EnrichmentOptions;
 
   // Track genre data storage
   private trackGenres = new Map<string, string[]>();
@@ -182,8 +188,12 @@ export class GenreEnrichmentQueue {
   // Cancellation flag for graceful shutdown
   private isCancelled = false;
 
-  constructor(callbacks: GenreEnrichmentCallbacks = {}) {
+  constructor(callbacks: GenreEnrichmentCallbacks = {}, options: EnrichmentOptions = {}) {
     this.callbacks = callbacks;
+    this.options = {
+      useLastfmTrackTags: options.useLastfmTrackTags ?? true,
+      useLastfmArtistTags: options.useLastfmArtistTags ?? true,
+    };
 
     // Create rate-limited queue for Last.fm
     this.lastfmQueue = new RateLimitedQueue({
@@ -226,13 +236,13 @@ export class GenreEnrichmentQueue {
         enrichmentStatus: 'enriching',
       });
 
-      // 1. Enqueue Last.fm track tags (only if valid track name and artist)
-      if (trackName && trackName.trim() !== '' && artistName && artistName !== 'Unknown Artist') {
+      // 1. Enqueue Last.fm track tags (only if enabled and valid track name and artist)
+      if (this.options.useLastfmTrackTags && trackName && trackName.trim() !== '' && artistName && artistName !== 'Unknown Artist') {
         this.enqueueLastfmTrack(trackId, trackName, artistName);
       }
 
-      // 2. Enqueue Last.fm artist tags (deduplicated, only if valid artist)
-      if (artistName && artistName !== 'Unknown Artist') {
+      // 2. Enqueue Last.fm artist tags (only if enabled, deduplicated, and valid artist)
+      if (this.options.useLastfmArtistTags && artistName && artistName !== 'Unknown Artist') {
         this.enqueueLastfmArtist(trackId, artistName);
       }
 
@@ -445,8 +455,9 @@ export class GenreEnrichmentQueue {
     const merged = mergeGenres(lastfmTrack, lastfmArtist, spotifyArtist, data.artistName);
 
     // Determine if enrichment is complete
-    const hasLastfmTrack = this.trackGenres.has(trackId);
-    const hasLastfmArtist = this.artistGenres.has(data.artistName);
+    // Only wait for enabled sources
+    const hasLastfmTrack = !this.options.useLastfmTrackTags || this.trackGenres.has(trackId);
+    const hasLastfmArtist = !this.options.useLastfmArtistTags || this.artistGenres.has(data.artistName);
     const hasSpotifyArtist = data.artistIds.every(id => this.spotifyGenres.has(id));
 
     const enrichmentStatus: EnrichedTrack['enrichmentStatus'] =

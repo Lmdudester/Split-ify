@@ -9,6 +9,7 @@ A (Claude Code) vibe-coded, client-side React web app that lets users filter Spo
 - 🎵 **Genre Filtering**: Select specific genres from comprehensive multi-source data
 - 🎯 **Popularity Filter**: Filter tracks by Spotify popularity (0-100 dual-handle slider)
 - 📋 **Interactive Playlist Selector**: Browse, search, and select from all your playlists
+- ⚙️ **Advanced Enrichment Settings**: Optional Last.fm genre enrichment (disabled by default for speed)
 - 🎨 **Display Customization**: Toggle track numbers and popularity column visibility
 - 💾 **Create Playlists**: Save your filtered results as new Spotify playlists
 - ⚡ **Fast & Responsive**: Virtualized track lists for smooth performance with large playlists
@@ -88,6 +89,10 @@ npm run dev
      - View playlist thumbnails, track counts, and owners
      - Click to select, then "Load Playlist"
    - **Option B**: Enter a Spotify playlist URL or ID directly
+   - **Optional**: Expand "Advanced Settings" to enable Last.fm genre enrichment
+     - Toggle "Use Last.fm track tags" for track-level genre data
+     - Toggle "Use Last.fm artist tags" for artist-level genre data
+     - Note: Enabling these significantly increases loading time but provides more comprehensive genre data
 4. Wait for the app to load tracks and enrich genres (or click "Cancel Loading" to stop)
 5. **Watch real-time progress:**
    - 4 independent progress bars show concurrent data fetching
@@ -140,26 +145,29 @@ The app uses Spotify's OAuth 2.0 with PKCE (Proof Key for Code Exchange) for sec
 When loading a playlist, the app uses a sophisticated concurrent enrichment system:
 
 1. **Spotify Tracks**: Fetches playlist tracks with pagination (immediate display)
-2. **Concurrent Genre Enrichment** (3 parallel sources):
-   - **Last.fm Track Tags**: Track-level genre tags for precise categorization
-   - **Last.fm Artist Tags**: Artist-level tags for broader coverage
-   - **Spotify Artist Genres**: Official Spotify genres as additional data
-3. **Genre Accumulation**: Combines ALL genres from all 3 sources (no fallback logic)
+2. **Configurable Genre Enrichment** (up to 3 parallel sources):
+   - **Spotify Artist Genres** (always enabled): Official Spotify genres, fast and reliable
+   - **Last.fm Track Tags** (optional): Track-level genre tags for precise categorization
+   - **Last.fm Artist Tags** (optional): Artist-level tags for broader coverage
+3. **Genre Accumulation**: Combines ALL genres from enabled sources (no fallback logic)
 4. **Real-time Updates**: Tracks enrich progressively as API calls complete
 5. **Smart Filtering**: Removes non-genre tags (mood descriptors, specific years, artist names)
 
 **Performance:**
-- Rate limiting: 3 requests/second for Last.fm (conservative 60% of API limit)
-- Concurrent processing: Up to 3 requests in parallel per source
-- Token bucket algorithm with 5-minute sliding window prevents bursting
-- Loading time: ~48 seconds for 100 tracks, ~8 minutes for 1000 tracks
+- Default (Spotify only): ~5-10 seconds for any size playlist
+- With Last.fm enabled:
+  - Rate limiting: 3 requests/second for Last.fm (conservative 60% of API limit)
+  - Concurrent processing: Up to 3 requests in parallel per source
+  - Token bucket algorithm with 5-minute sliding window prevents bursting
+  - Loading time: ~48 seconds for 100 tracks, ~8 minutes for 1000 tracks
 - ETA calculation: Throughput-based with 25% buffer, updates in real-time
 - Cancellation: Graceful cancellation clears queue and prevents orphaned data
 
 **Genre Coverage:**
-- Average 3-4x more genres per track vs single-source approach
-- 95-100% coverage rate (combining all sources)
-- Filtered to exclude mood tags, artist names, and specific years
+- Spotify only: Fast, reliable genre data from artist metadata
+- With Last.fm enabled: Average 3-4x more genres per track vs single-source approach
+- 95-100% coverage rate when combining all sources
+- All sources filtered to exclude mood tags, artist names, and specific years
 
 ### Filtering
 

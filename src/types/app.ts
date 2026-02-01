@@ -48,3 +48,8 @@ export interface UISettings {
   showTrackNumbers: boolean;
   showPopularity: boolean;
 }
+
+export interface EnrichmentSettings {
+  useLastfmTrackTags: boolean;
+  useLastfmArtistTags: boolean;
+}

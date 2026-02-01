@@ -7,7 +7,10 @@ export function HomePage() {
   return (
     <div className="home-page">
       <div className="hero">
-        <h1 className="logo">Split-ify</h1>
+        <div className="logo-container home-logo-container">
+          <img src="/logo.png" alt="Split-ify Logo" className="logo-image home-logo-image" />
+          <h1 className="logo">Split-ify</h1>
+        </div>
         <p className="tagline">
           Filter your Spotify playlists by artist genres
         </p>

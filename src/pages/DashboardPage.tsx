@@ -39,7 +39,10 @@ export function DashboardPage() {
   return (
     <div className="dashboard-page">
       <header className="dashboard-header">
-        <h1 className="logo">Split-ify</h1>
+        <div className="logo-container">
+          <img src="/logo.png" alt="Split-ify Logo" className="logo-image" />
+          <h1 className="logo">Split-ify</h1>
+        </div>
         <button onClick={handleLogout} className="logout-button">
           Logout
         </button>
