@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getAllUserPlaylists } from '../../services/playlist';
 import { UserPlaylistItem } from '../../types/spotify';
+import { AdvancedSettings } from './AdvancedSettings';
 
 interface PlaylistSelectorProps {
   onSelect: (playlistId: string) => void;
@@ -181,6 +182,8 @@ export function PlaylistSelector({ onSelect, isLoading, onReset }: PlaylistSelec
           <p>No playlists match your search.</p>
         </div>
       )}
+
+      <AdvancedSettings />
 
       <button
         onClick={handleLoadPlaylist}

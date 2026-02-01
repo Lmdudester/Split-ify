@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { EnrichedTrack, LoadingState, UISettings } from '../types/app';
+import { EnrichedTrack, LoadingState, UISettings, EnrichmentSettings } from '../types/app';
 
 interface FilterState {
   selectedGenres: string[];
@@ -21,6 +21,9 @@ interface AppState {
   // UI Settings
   uiSettings: UISettings;
 
+  // Enrichment Settings
+  enrichmentSettings: EnrichmentSettings;
+
   // Actions
   setTracks: (tracks: EnrichedTrack[]) => void;
   addTracks: (tracks: EnrichedTrack[]) => void;
@@ -41,6 +44,11 @@ interface AppState {
   setShowTrackNumbers: (show: boolean) => void;
   setShowPopularity: (show: boolean) => void;
   resetUISettings: () => void;
+
+  // Enrichment Settings actions
+  setUseLastfmTrackTags: (use: boolean) => void;
+  setUseLastfmArtistTags: (use: boolean) => void;
+  resetEnrichmentSettings: () => void;
 }
 
 const initialLoadingState: LoadingState = {
@@ -75,6 +83,11 @@ const initialUISettings: UISettings = {
   showPopularity: false
 };
 
+const initialEnrichmentSettings: EnrichmentSettings = {
+  useLastfmTrackTags: false,
+  useLastfmArtistTags: false
+};
+
 export const useAppStore = create<AppState>((set) => ({
   tracks: [],
   playlistName: '',
@@ -82,6 +95,7 @@ export const useAppStore = create<AppState>((set) => ({
   loading: initialLoadingState,
   filters: initialFilterState,
   uiSettings: initialUISettings,
+  enrichmentSettings: initialEnrichmentSettings,
 
   setTracks: (tracks) => set({ tracks }),
 
@@ -158,5 +172,17 @@ export const useAppStore = create<AppState>((set) => ({
       uiSettings: { ...state.uiSettings, showPopularity: show }
     })),
 
-  resetUISettings: () => set({ uiSettings: initialUISettings })
+  resetUISettings: () => set({ uiSettings: initialUISettings }),
+
+  setUseLastfmTrackTags: (use) =>
+    set((state) => ({
+      enrichmentSettings: { ...state.enrichmentSettings, useLastfmTrackTags: use }
+    })),
+
+  setUseLastfmArtistTags: (use) =>
+    set((state) => ({
+      enrichmentSettings: { ...state.enrichmentSettings, useLastfmArtistTags: use }
+    })),
+
+  resetEnrichmentSettings: () => set({ enrichmentSettings: initialEnrichmentSettings })
 }));

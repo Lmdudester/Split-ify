@@ -6,6 +6,36 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-01-31
+
+### Added
+- **Advanced Settings for Genre Enrichment**
+  - Collapsible "Advanced Settings" section in playlist selector
+  - Toggle for Last.fm track tags (disabled by default for faster loading)
+  - Toggle for Last.fm artist tags (disabled by default for faster loading)
+  - Warning message about Last.fm API slowness
+  - Settings persist across playlist selections
+  - Progress bars now conditionally display based on enabled sources
+
+- **Logo Integration**
+  - Added Split-ify logo to homepage (centered above title)
+  - Added logo to dashboard header (next to title)
+  - Transparent PNG format for clean integration with dark theme
+
+### Changed
+- Last.fm genre enrichment now disabled by default for faster initial load times
+- Users can opt-in to Last.fm enrichment via Advanced Settings
+- Loading progress only shows progress bars for enabled enrichment sources
+- Default loading now only uses Spotify artist genres (fastest option)
+
+### Technical
+- Added `EnrichmentSettings` type with `useLastfmTrackTags` and `useLastfmArtistTags` flags
+- Added `AdvancedSettings` component with collapsible UI
+- Extended app store with enrichment settings state and actions
+- Modified `GenreEnrichmentQueue` to accept `EnrichmentOptions` for conditional enrichment
+- Updated `LoadingProgress` to conditionally render Last.fm progress bars
+- Added logo asset to `public/` directory
+
 ## [1.3.0] - 2026-01-31
 
 ### Added

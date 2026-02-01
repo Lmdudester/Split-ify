@@ -13,6 +13,7 @@
  */
 
 import { LoadingState } from '../types/app';
+import { useAppStore } from '../stores/app-store';
 
 interface ProgressBarProps {
   label: string;
@@ -108,22 +109,24 @@ interface LoadingProgressProps {
 }
 
 export function LoadingProgress({ loading, onCancel }: LoadingProgressProps) {
+  const { useLastfmTrackTags, useLastfmArtistTags } = useAppStore((state) => state.enrichmentSettings);
+
   if (!loading.isLoading) {
     return null;
   }
 
   // Calculate ETAs for each queue (only for queues with timing data)
-  const lastfmTrackETA = calculateETA(
+  const lastfmTrackETA = useLastfmTrackTags ? calculateETA(
     loading.lastfmTrackTags.completed,
     loading.lastfmTrackTags.total,
     loading.lastfmTrackTags.averageTimeMs
-  );
+  ) : null;
 
-  const lastfmArtistETA = calculateETA(
+  const lastfmArtistETA = useLastfmArtistTags ? calculateETA(
     loading.lastfmArtistTags.completed,
     loading.lastfmArtistTags.total,
     loading.lastfmArtistTags.averageTimeMs
-  );
+  ) : null;
 
   const spotifyArtistETA = calculateETA(
     loading.spotifyArtistGenres.completed,
@@ -140,16 +143,17 @@ export function LoadingProgress({ loading, onCancel }: LoadingProgressProps) {
   const aggregatedETA = etas.length > 0 ? Math.max(...etas) : null;
 
   // Determine if we should show ETA
+  // Only check completion for enabled queues
   const allQueuesComplete =
-    loading.lastfmTrackTags.completed >= loading.lastfmTrackTags.total &&
-    loading.lastfmArtistTags.completed >= loading.lastfmArtistTags.total &&
+    (!useLastfmTrackTags || loading.lastfmTrackTags.completed >= loading.lastfmTrackTags.total) &&
+    (!useLastfmArtistTags || loading.lastfmArtistTags.completed >= loading.lastfmArtistTags.total) &&
     loading.spotifyArtistGenres.completed >= loading.spotifyArtistGenres.total;
 
-  // Check if either Last.fm queue has at least 15% completion
-  const lastfmTrackProgress = loading.lastfmTrackTags.total > 0
+  // Check if any enabled Last.fm queue has at least 15% completion
+  const lastfmTrackProgress = useLastfmTrackTags && loading.lastfmTrackTags.total > 0
     ? loading.lastfmTrackTags.completed / loading.lastfmTrackTags.total
     : 0;
-  const lastfmArtistProgress = loading.lastfmArtistTags.total > 0
+  const lastfmArtistProgress = useLastfmArtistTags && loading.lastfmArtistTags.total > 0
     ? loading.lastfmArtistTags.completed / loading.lastfmArtistTags.total
     : 0;
 
@@ -168,19 +172,23 @@ export function LoadingProgress({ loading, onCancel }: LoadingProgressProps) {
           total={loading.spotifyTracks.total}
         />
 
-        <ProgressBar
-          label="Last.fm Track Tags"
-          current={loading.lastfmTrackTags.completed}
-          total={loading.lastfmTrackTags.total}
-          averageTimeMs={loading.lastfmTrackTags.averageTimeMs}
-        />
+        {useLastfmTrackTags && (
+          <ProgressBar
+            label="Last.fm Track Tags"
+            current={loading.lastfmTrackTags.completed}
+            total={loading.lastfmTrackTags.total}
+            averageTimeMs={loading.lastfmTrackTags.averageTimeMs}
+          />
+        )}
 
-        <ProgressBar
-          label="Last.fm Artist Tags"
-          current={loading.lastfmArtistTags.completed}
-          total={loading.lastfmArtistTags.total}
-          averageTimeMs={loading.lastfmArtistTags.averageTimeMs}
-        />
+        {useLastfmArtistTags && (
+          <ProgressBar
+            label="Last.fm Artist Tags"
+            current={loading.lastfmArtistTags.completed}
+            total={loading.lastfmArtistTags.total}
+            averageTimeMs={loading.lastfmArtistTags.averageTimeMs}
+          />
+        )}
 
         <ProgressBar
           label="Spotify Artist Genres"
