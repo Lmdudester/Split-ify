@@ -1,0 +1,39 @@
+services:
+  splitify:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VITE_SPOTIFY_CLIENT_ID: ${VITE_SPOTIFY_CLIENT_ID}
+        VITE_REDIRECT_URI: ${VITE_REDIRECT_URI}
+        VITE_LASTFM_API_KEY: ${VITE_LASTFM_API_KEY}
+    container_name: splitify
+    ports:
+      - "3000:80"
+      - "3443:443"
+    environment:
+      - GIT_REPO_URL=${GIT_REPO_URL}
+      - GIT_BRANCH=${GIT_BRANCH:-main}
+      - UPDATE_CHECK_INTERVAL=${UPDATE_CHECK_INTERVAL:-900}
+      - VITE_SPOTIFY_CLIENT_ID=${VITE_SPOTIFY_CLIENT_ID}
+      - VITE_REDIRECT_URI=${VITE_REDIRECT_URI}
+      - VITE_LASTFM_API_KEY=${VITE_LASTFM_API_KEY}
+    volumes:
+      # SSL certificates
+      - ./ssl:/etc/nginx/ssl:ro
+      # Git repository persistence (for auto-update)
+      - app-git:/app/.git
+      - app-data:/app
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  app-git:
+    name: splitify-git
+  app-data:
+    name: splitify-data
