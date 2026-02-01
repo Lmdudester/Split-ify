@@ -10,7 +10,7 @@ echo "[AUTO-UPDATE] Branch: ${GIT_BRANCH:-main}"
 echo "[AUTO-UPDATE] Check interval: ${UPDATE_CHECK_INTERVAL:-900} seconds"
 
 # Initialize git repository if not already done
-if [ ! -d "/app/.git" ]; then
+if ! git -C /app rev-parse --git-dir > /dev/null 2>&1; then
     echo "[AUTO-UPDATE] Initializing git repository..."
     cd /app
     git init
