@@ -788,7 +788,11 @@ body {
   flex-direction: column;
 }
 
-/* Display Settings Header */
+/* Display Settings Section */
+.display-settings-section {
+  margin-bottom: 1.5rem;
+}
+
 .display-settings-header {
   display: flex;
   justify-content: space-between;
@@ -796,8 +800,48 @@ body {
   margin-bottom: 1rem;
 }
 
+.collapsible-header {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  user-select: none;
+  transition: color 0.2s;
+}
+
+.collapsible-header:hover {
+  color: var(--spotify-green);
+}
+
+.collapse-icon {
+  font-size: 0.8rem;
+  transition: transform 0.2s;
+  display: inline-block;
+}
+
+.collapse-icon.expanded {
+  transform: rotate(90deg);
+}
+
+.display-settings-summary {
+  font-size: 0.75rem;
+  color: var(--spotify-light-gray);
+  opacity: 0.7;
+  margin-top: -0.5rem;
+  margin-bottom: 1rem;
+  margin-left: 1.5rem;
+  pointer-events: none;
+  user-select: none;
+}
+
 .display-settings-content {
-  margin-bottom: 1.5rem;
+  margin-bottom: 0;
+}
+
+/* Filters Section */
+.filters-section {
+  display: flex;
+  flex-direction: column;
 }
 
 .filter-header {
@@ -805,6 +849,17 @@ body {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
+}
+
+.filters-summary {
+  font-size: 0.75rem;
+  color: var(--spotify-light-gray);
+  opacity: 0.7;
+  margin-top: -0.5rem;
+  margin-bottom: 1rem;
+  margin-left: 1.5rem;
+  pointer-events: none;
+  user-select: none;
 }
 
 .reset-button {
@@ -887,6 +942,42 @@ body {
   font-weight: 600;
   color: var(--spotify-white);
   font-size: 1rem;
+}
+
+.popularity-min.editable,
+.popularity-max.editable {
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.popularity-min.editable:hover,
+.popularity-max.editable:hover {
+  background-color: var(--spotify-gray);
+}
+
+.popularity-input {
+  width: 60px;
+  padding: 0.25rem 0.5rem;
+  background-color: var(--spotify-gray);
+  border: 1px solid var(--spotify-green);
+  border-radius: 4px;
+  color: var(--spotify-white);
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: center;
+  outline: none;
+}
+
+.popularity-input::-webkit-inner-spin-button,
+.popularity-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.popularity-input[type=number] {
+  -moz-appearance: textfield;
 }
 
 /* Slider Styles */

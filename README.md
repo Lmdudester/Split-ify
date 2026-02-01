@@ -7,10 +7,11 @@ A (Claude Code) vibe-coded, client-side React web app that lets users filter Spo
 ## Features
 
 - 🎵 **Genre Filtering**: Select specific genres from comprehensive multi-source data
-- 🎯 **Popularity Filter**: Filter tracks by Spotify popularity (0-100 dual-handle slider)
+- 🎯 **Popularity Filter**: Filter tracks by Spotify popularity (0-100 dual-handle slider with manual input)
 - 📋 **Interactive Playlist Selector**: Browse, search, and select from all your playlists
 - ⚙️ **Advanced Enrichment Settings**: Optional Last.fm genre enrichment (disabled by default for speed)
 - 🎨 **Display Customization**: Toggle track numbers and popularity column visibility
+- 🗂️ **Collapsible Filters**: Organize your workspace with collapsible sections and at-a-glance filter summaries
 - 💾 **Create Playlists**: Save your filtered results as new Spotify playlists
 - ⚡ **Fast & Responsive**: Virtualized track lists for smooth performance with large playlists
 - 📊 **Advanced Loading Progress**: Real-time progress tracking with ETA across multiple data sources

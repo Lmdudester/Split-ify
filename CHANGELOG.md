@@ -6,6 +6,35 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+- **Editable Popularity Filter Values**
+  - Click on min/max popularity numbers to type values manually
+  - Input validation ensures values stay within 0-100 range
+  - Prevents invalid ranges (min > max)
+  - Keyboard support: Enter to confirm, Escape to cancel
+  - Hover effects and visual feedback for better UX
+
+- **Collapsible Filter Sections**
+  - Display Options section now collapsible (collapsed by default)
+  - Filters section now collapsible (expanded by default)
+  - Animated collapse icons indicate section state
+  - Click section headers to expand/collapse
+
+- **Active Filter Summaries**
+  - Display Options shows active settings when collapsed (e.g., "Track numbers, Popularity")
+  - Filters section shows active filters when collapsed:
+    - Popularity range when modified (e.g., "Popularity: 30-80")
+    - Selected genres (e.g., "Genres: rock, pop, jazz" or "Genres: rock, pop, jazz +2 more")
+    - Combined summaries when multiple filters active
+  - De-emphasized, non-interactive text for quick at-a-glance status
+
+### Technical
+- Added comprehensive component tests for PopularityFilter (12 tests)
+- Added comprehensive component tests for FilterPanel (19 tests)
+- Added ResizeObserver mock to test setup for Radix UI compatibility
+- All tests passing with 95.44% overall coverage
+- Fixed `selectedGenres` property access in FilterPanel
+
 ## [1.4.0] - 2026-01-31
 
 ### Added
