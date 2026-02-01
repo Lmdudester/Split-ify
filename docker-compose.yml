@@ -1,0 +1,24 @@
+services:
+  splitify:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: splitify
+    ports:
+      - "3000:80"
+      - "3443:443"
+    environment:
+      - GIT_REPO_URL=${GIT_REPO_URL}
+      - GIT_BRANCH=${GIT_BRANCH:-main}
+    volumes:
+      # Mount local .env file for build-time configuration
+      - ./.env:/app/config/.env:ro
+      # SSL certificates
+      - ./ssl:/etc/nginx/ssl:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 120s
