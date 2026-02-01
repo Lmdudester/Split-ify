@@ -1,6 +1,7 @@
 import { SPOTIFY_CONFIG } from '../config/spotify';
 import { generateCodeVerifier, generateCodeChallenge } from '../utils/pkce';
 import { TokenResponse } from '../types/spotify';
+import { TESTING_MODE, mockAuthState } from '../config/testing';
 
 const TOKEN_KEY = 'spotify_token';
 const REFRESH_TOKEN_KEY = 'spotify_refresh_token';
@@ -17,6 +18,14 @@ export interface AuthTokens {
  * Initiate the PKCE OAuth flow by redirecting to Spotify
  */
 export async function login(): Promise<void> {
+  // In testing mode, just set mock tokens and skip OAuth redirect
+  if (TESTING_MODE) {
+    localStorage.setItem(TOKEN_KEY, mockAuthState.token);
+    localStorage.setItem(REFRESH_TOKEN_KEY, mockAuthState.refreshToken);
+    localStorage.setItem(TOKEN_EXPIRY_KEY, mockAuthState.expiresAt.toString());
+    return;
+  }
+
   const verifier = generateCodeVerifier();
   const challenge = await generateCodeChallenge(verifier);
 
@@ -119,6 +128,11 @@ function saveTokens(tokenResponse: TokenResponse): void {
  * Get the current access token, refreshing if necessary
  */
 export async function getAccessToken(): Promise<string | null> {
+  // In testing mode, return mock token
+  if (TESTING_MODE) {
+    return mockAuthState.token;
+  }
+
   const token = localStorage.getItem(TOKEN_KEY);
   const expiryStr = localStorage.getItem(TOKEN_EXPIRY_KEY);
 
@@ -145,6 +159,11 @@ export async function getAccessToken(): Promise<string | null> {
  * Check if user is authenticated
  */
 export function isAuthenticated(): boolean {
+  // In testing mode, always return true
+  if (TESTING_MODE) {
+    return true;
+  }
+
   return localStorage.getItem(TOKEN_KEY) !== null;
 }
 
