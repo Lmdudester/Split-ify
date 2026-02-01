@@ -27,31 +27,6 @@ test.describe('Authentication', () => {
     await expect(loginButton).toBeEnabled()
   })
 
-  test.skip('should redirect to Spotify OAuth on login click', async ({ page }) => {
-    // Skipped: This would redirect to real Spotify OAuth
-    // In a real test, we would:
-    // 1. Mock the OAuth endpoints with page.route()
-    // 2. Intercept the redirect
-    // 3. Provide mock tokens
-    // 4. Verify the callback page processes them correctly
-
-    await page.goto('/')
-
-    // Set up route interception for OAuth
-    await page.route('https://accounts.spotify.com/authorize**', (route) => {
-      // Intercept and mock the OAuth redirect
-      route.fulfill({
-        status: 200,
-        body: 'Mock OAuth page',
-      })
-    })
-
-    const loginButton = page.getByRole('button', { name: /login/i })
-    await loginButton.click()
-
-    // Would verify redirect happened
-    await page.waitForURL(/accounts\.spotify\.com/)
-  })
 })
 
 test.describe('Authentication with Testing Mode', () => {

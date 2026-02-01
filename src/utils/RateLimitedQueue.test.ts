@@ -42,24 +42,21 @@ describe('RateLimitedQueue', () => {
       expect(mockFn2).toHaveBeenCalledTimes(1)
     })
 
-    it.skip('should handle request errors', async () => {
-      // Skipping this test due to async error handling in queue
-      // The queue properly handles errors but Vitest detects unhandled rejections
+    it('should handle request errors', async () => {
       const queue = new RateLimitedQueue({ requestsPerSecond: 10, maxConcurrent: 1 })
       const error = new Error('Request failed')
       const mockFn = vi.fn().mockRejectedValue(error)
 
       const promise = queue.enqueue('test-1', mockFn)
 
+      // Catch the rejection immediately to prevent unhandled rejection
+      const resultPromise = promise.catch((err) => err)
+
       await vi.runAllTimersAsync()
 
-      // Properly catch the error
-      try {
-        await promise
-        expect.fail('Should have thrown an error')
-      } catch (err: any) {
-        expect(err.message).toBe('Request failed')
-      }
+      const result = await resultPromise
+      expect(result).toBeInstanceOf(Error)
+      expect(result.message).toBe('Request failed')
     })
   })
 
