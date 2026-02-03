@@ -1,6 +1,14 @@
 #!/bin/bash
 set -e  # Exit on any error
 
+# Clean up any previous source directory
+if [ -d /app/src ]; then
+    echo "[STARTUP] Cleaning up previous source..."
+    # Remove write protection on node_modules/.cache and other protected files
+    chmod -R u+rwX /app/src 2>/dev/null || true
+    rm -rf /app/src
+fi
+
 echo "[STARTUP] Cloning repository..."
 git clone --depth 1 --branch "${GIT_BRANCH:-main}" "${GIT_REPO_URL}" /app/src
 
