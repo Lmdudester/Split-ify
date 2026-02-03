@@ -5,7 +5,6 @@ services:
       dockerfile: Dockerfile
     container_name: splitify
     ports:
-      - "3000:80"
       - "3443:443"
     environment:
       - GIT_REPO_URL=${GIT_REPO_URL}
