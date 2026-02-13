@@ -8,12 +8,14 @@ import { PlaylistInput } from '../components/playlist/PlaylistInput';
 import { TrackList } from '../components/playlist/TrackList';
 import { FilterPanel } from '../components/filters/FilterPanel';
 import { CreatePlaylistModal } from '../components/create/CreatePlaylistModal';
+import { MobileFilterDrawer } from '../components/filters/MobileFilterDrawer';
 import { LoadingProgress } from '../components/LoadingProgress';
 
 export function DashboardPage() {
   const navigate = useNavigate();
   const { logout } = useAuth();
   const [modalOpen, setModalOpen] = useState(false);
+  const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const [resetKey, setResetKey] = useState(0);
 
   const { tracks, loading, playlistName, clearTracks } = useAppStore();
@@ -98,6 +100,22 @@ export function DashboardPage() {
           </aside>
         )}
       </div>
+
+      {tracks.length > 0 && (
+        <>
+          <button
+            className="mobile-filter-button"
+            onClick={() => setMobileFilterOpen(true)}
+          >
+            Filters
+          </button>
+          <MobileFilterDrawer
+            allGenres={allGenres}
+            open={mobileFilterOpen}
+            onOpenChange={setMobileFilterOpen}
+          />
+        </>
+      )}
 
       <CreatePlaylistModal
         tracks={filteredTracks}
